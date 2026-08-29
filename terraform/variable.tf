@@ -12,8 +12,8 @@ variable "region" {
 }
 
 #variable "domain" {
- # type    = string
-  #default = "ecommerce.zakariyaalab.com"
+# type    = string
+#default = "ecommerce.zakariyaalab.com"
 
 #}
 
