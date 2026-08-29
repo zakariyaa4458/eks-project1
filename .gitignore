@@ -28,6 +28,7 @@ services/worker/worker
 # Kubernetes
 kubeconfig
 *.kubeconfig
+kubernetes/postgres/secret.yaml
 
 # IDE
 .vscode/
@@ -43,3 +44,5 @@ Thumbs.db
 .env
 .env.*
 *.pem
+
+
