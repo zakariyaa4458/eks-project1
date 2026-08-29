@@ -11,11 +11,11 @@ variable "region" {
 
 }
 
-variable "domain" {
-  type    = string
-  default = "ecommerce.zakariyaalab.com"
+#variable "domain" {
+ # type    = string
+  #default = "ecommerce.zakariyaalab.com"
 
-}
+#}
 
 #variable "aws_eks_cluster" {
 # type = string
