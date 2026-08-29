@@ -104,10 +104,10 @@ jobs:
 
         - name: run checkov
           uses: bridgecrewio/checkov-action@master
-        
-        
           with:
             hard_fail_on: CKV_AWS_103,CKV2_AWS_74,CKV2_AWS_12,CKV2_AWS_260,CKV2_AWS_129
+            framework: terraform
+            
 
         - name: terraform-validate
           run: terraform validate
