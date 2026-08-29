@@ -12,7 +12,6 @@ on:
     - Dockerfile
     - terraform/**
     - services/**
-    - package-lock.json
 
   workflow_dispatch:
     

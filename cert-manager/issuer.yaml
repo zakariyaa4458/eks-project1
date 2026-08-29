@@ -1,0 +1,22 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: issuer
+
+spec:
+  acme:
+    server: "https://acme-v02.api.letsencrypt.org/directory"
+    email: "zakariyaa4458@gmail.com"
+    privateKeySecretRef:
+      name: issuer
+    solvers:
+    - dns01:
+        route53:
+          hostedZoneID: Z101674438AEID6T19NFK
+          region: eu-west-2
+      selector:
+        dnsZones:
+        - "ecommerce.zakariyaalab.com"
+    - http01:
+        ingress:
+          class: traefik

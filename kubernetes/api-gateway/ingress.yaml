@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-gateway-ingress
+spec:
+  tls:
+  - hosts:
+      - api.ecommerce.zakariyaalab.com
+    secretName: api-gateway-tls
+  rules:
+  - host: "api.ecommerce.zakariyaalab.com"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: api-gateway-service
+            port:
+              number: 80
+  ingressClassName: traefik
+
+  
+

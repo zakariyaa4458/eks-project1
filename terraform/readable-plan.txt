@@ -1,0 +1,2199 @@
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+ <= read (data resources)
+
+Terraform will perform the following actions:
+
+  # data.tls_certificate.tls_certificate_eks will be read during apply
+  # (config refers to values not yet known)
+ <= data "tls_certificate" "tls_certificate_eks" {
+      + certificates = (known after apply)
+      + id           = (known after apply)
+      + url          = (known after apply)
+    }
+
+  # aws_ecr_repository.eks-repositories["api-gateway"] will be created
+  + resource "aws_ecr_repository" "eks-repositories" {
+      + arn                  = (known after apply)
+      + id                   = (known after apply)
+      + image_tag_mutability = "MUTABLE"
+      + name                 = "api-gateway"
+      + region               = "eu-west-2"
+      + registry_id          = (known after apply)
+      + repository_url       = (known after apply)
+      + tags_all             = (known after apply)
+
+      + image_scanning_configuration {
+          + scan_on_push = true
+        }
+    }
+
+  # aws_ecr_repository.eks-repositories["dashboard-api"] will be created
+  + resource "aws_ecr_repository" "eks-repositories" {
+      + arn                  = (known after apply)
+      + id                   = (known after apply)
+      + image_tag_mutability = "MUTABLE"
+      + name                 = "dashboard-api"
+      + region               = "eu-west-2"
+      + registry_id          = (known after apply)
+      + repository_url       = (known after apply)
+      + tags_all             = (known after apply)
+
+      + image_scanning_configuration {
+          + scan_on_push = true
+        }
+    }
+
+  # aws_ecr_repository.eks-repositories["inventory-service"] will be created
+  + resource "aws_ecr_repository" "eks-repositories" {
+      + arn                  = (known after apply)
+      + id                   = (known after apply)
+      + image_tag_mutability = "MUTABLE"
+      + name                 = "inventory-service"
+      + region               = "eu-west-2"
+      + registry_id          = (known after apply)
+      + repository_url       = (known after apply)
+      + tags_all             = (known after apply)
+
+      + image_scanning_configuration {
+          + scan_on_push = true
+        }
+    }
+
+  # aws_ecr_repository.eks-repositories["notification-service"] will be created
+  + resource "aws_ecr_repository" "eks-repositories" {
+      + arn                  = (known after apply)
+      + id                   = (known after apply)
+      + image_tag_mutability = "MUTABLE"
+      + name                 = "notification-service"
+      + region               = "eu-west-2"
+      + registry_id          = (known after apply)
+      + repository_url       = (known after apply)
+      + tags_all             = (known after apply)
+
+      + image_scanning_configuration {
+          + scan_on_push = true
+        }
+    }
+
+  # aws_ecr_repository.eks-repositories["order-service"] will be created
+  + resource "aws_ecr_repository" "eks-repositories" {
+      + arn                  = (known after apply)
+      + id                   = (known after apply)
+      + image_tag_mutability = "MUTABLE"
+      + name                 = "order-service"
+      + region               = "eu-west-2"
+      + registry_id          = (known after apply)
+      + repository_url       = (known after apply)
+      + tags_all             = (known after apply)
+
+      + image_scanning_configuration {
+          + scan_on_push = true
+        }
+    }
+
+  # aws_ecr_repository.eks-repositories["payment-service"] will be created
+  + resource "aws_ecr_repository" "eks-repositories" {
+      + arn                  = (known after apply)
+      + id                   = (known after apply)
+      + image_tag_mutability = "MUTABLE"
+      + name                 = "payment-service"
+      + region               = "eu-west-2"
+      + registry_id          = (known after apply)
+      + repository_url       = (known after apply)
+      + tags_all             = (known after apply)
+
+      + image_scanning_configuration {
+          + scan_on_push = true
+        }
+    }
+
+  # aws_ecr_repository.eks-repositories["scheduler"] will be created
+  + resource "aws_ecr_repository" "eks-repositories" {
+      + arn                  = (known after apply)
+      + id                   = (known after apply)
+      + image_tag_mutability = "MUTABLE"
+      + name                 = "scheduler"
+      + region               = "eu-west-2"
+      + registry_id          = (known after apply)
+      + repository_url       = (known after apply)
+      + tags_all             = (known after apply)
+
+      + image_scanning_configuration {
+          + scan_on_push = true
+        }
+    }
+
+  # aws_ecr_repository.eks-repositories["shipping-service"] will be created
+  + resource "aws_ecr_repository" "eks-repositories" {
+      + arn                  = (known after apply)
+      + id                   = (known after apply)
+      + image_tag_mutability = "MUTABLE"
+      + name                 = "shipping-service"
+      + region               = "eu-west-2"
+      + registry_id          = (known after apply)
+      + repository_url       = (known after apply)
+      + tags_all             = (known after apply)
+
+      + image_scanning_configuration {
+          + scan_on_push = true
+        }
+    }
+
+  # aws_ecr_repository.eks-repositories["worker"] will be created
+  + resource "aws_ecr_repository" "eks-repositories" {
+      + arn                  = (known after apply)
+      + id                   = (known after apply)
+      + image_tag_mutability = "MUTABLE"
+      + name                 = "worker"
+      + region               = "eu-west-2"
+      + registry_id          = (known after apply)
+      + repository_url       = (known after apply)
+      + tags_all             = (known after apply)
+
+      + image_scanning_configuration {
+          + scan_on_push = true
+        }
+    }
+
+  # aws_eip.nat-eip will be created
+  + resource "aws_eip" "nat-eip" {
+      + allocation_id        = (known after apply)
+      + arn                  = (known after apply)
+      + association_id       = (known after apply)
+      + carrier_ip           = (known after apply)
+      + customer_owned_ip    = (known after apply)
+      + domain               = (known after apply)
+      + id                   = (known after apply)
+      + instance             = (known after apply)
+      + ipam_pool_id         = (known after apply)
+      + network_border_group = (known after apply)
+      + network_interface    = (known after apply)
+      + private_dns          = (known after apply)
+      + private_ip           = (known after apply)
+      + ptr_record           = (known after apply)
+      + public_dns           = (known after apply)
+      + public_ip            = (known after apply)
+      + public_ipv4_pool     = (known after apply)
+      + region               = "eu-west-2"
+      + tags                 = {
+          + "Name"        = "nat-eip"
+          + "description" = "Elastic IP for the NAT Gateway"
+        }
+      + tags_all             = {
+          + "Name"        = "nat-eip"
+          + "description" = "Elastic IP for the NAT Gateway"
+        }
+    }
+
+  # aws_eks_cluster.eks-cluster will be created
+  + resource "aws_eks_cluster" "eks-cluster" {
+      + arn                           = (known after apply)
+      + bootstrap_self_managed_addons = true
+      + certificate_authority         = (known after apply)
+      + cluster_id                    = (known after apply)
+      + created_at                    = (known after apply)
+      + deletion_protection           = (known after apply)
+      + endpoint                      = (known after apply)
+      + id                            = (known after apply)
+      + identity                      = (known after apply)
+      + name                          = "eks-cluster"
+      + platform_version              = (known after apply)
+      + region                        = "eu-west-2"
+      + role_arn                      = (known after apply)
+      + status                        = (known after apply)
+      + tags_all                      = (known after apply)
+      + version                       = "1.35"
+
+      + access_config (known after apply)
+
+      + compute_config (known after apply)
+
+      + control_plane_scaling_config (known after apply)
+
+      + kubernetes_network_config (known after apply)
+
+      + storage_config (known after apply)
+
+      + upgrade_policy (known after apply)
+
+      + vpc_config {
+          + cluster_security_group_id = (known after apply)
+          + control_plane_egress_mode = (known after apply)
+          + endpoint_private_access   = false
+          + endpoint_public_access    = true
+          + public_access_cidrs       = (known after apply)
+          + subnet_ids                = (known after apply)
+          + vpc_id                    = (known after apply)
+        }
+    }
+
+  # aws_eks_node_group.eks-node-group will be created
+  + resource "aws_eks_node_group" "eks-node-group" {
+      + ami_type               = (known after apply)
+      + arn                    = (known after apply)
+      + capacity_type          = (known after apply)
+      + cluster_name           = "eks-cluster"
+      + disk_size              = (known after apply)
+      + id                     = (known after apply)
+      + instance_types         = (known after apply)
+      + node_group_name        = "eks-node-group"
+      + node_group_name_prefix = (known after apply)
+      + node_role_arn          = (known after apply)
+      + region                 = "eu-west-2"
+      + release_version        = (known after apply)
+      + resources              = (known after apply)
+      + status                 = (known after apply)
+      + subnet_ids             = (known after apply)
+      + tags_all               = (known after apply)
+      + version                = (known after apply)
+
+      + node_repair_config (known after apply)
+
+      + scaling_config {
+          + desired_size = 1
+          + max_size     = 2
+          + min_size     = 1
+        }
+
+      + update_config {
+          + max_unavailable = 1
+        }
+    }
+
+  # aws_iam_openid_connect_provider.default will be created
+  + resource "aws_iam_openid_connect_provider" "default" {
+      + arn             = (known after apply)
+      + client_id_list  = [
+          + "sts.amazonaws.com",
+        ]
+      + id              = (known after apply)
+      + tags_all        = (known after apply)
+      + thumbprint_list = (known after apply)
+      + url             = (known after apply)
+    }
+
+  # aws_iam_role.eks-role will be created
+  + resource "aws_iam_role" "eks-role" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "eks.amazonaws.com"
+                        }
+                      + Sid       = ""
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "eks-role"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags                  = {
+          + "tag-key" = "tag-value"
+        }
+      + tags_all              = {
+          + "tag-key" = "tag-value"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # aws_iam_role.node-group-role will be created
+  + resource "aws_iam_role" "node-group-role" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "ec2.amazonaws.com"
+                        }
+                      + Sid       = ""
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "eks-node-group-role"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags                  = {
+          + "tag-key" = "tag-value"
+        }
+      + tags_all              = {
+          + "tag-key" = "tag-value"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # aws_iam_role_policy_attachment.eks_cluster_policy will be created
+  + resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+      + role       = "eks-role"
+    }
+
+  # aws_internet_gateway.internet-gateway will be created
+  + resource "aws_internet_gateway" "internet-gateway" {
+      + arn      = (known after apply)
+      + id       = (known after apply)
+      + owner_id = (known after apply)
+      + region   = "eu-west-2"
+      + tags     = {
+          + "Name"        = "internet-gateway"
+          + "description" = "Internet Gateway for the VPC and public subnets"
+        }
+      + tags_all = {
+          + "Name"        = "internet-gateway"
+          + "description" = "Internet Gateway for the VPC and public subnets"
+        }
+      + vpc_id   = (known after apply)
+    }
+
+  # aws_nat_gateway.nat-gateway will be created
+  + resource "aws_nat_gateway" "nat-gateway" {
+      + allocation_id                      = (known after apply)
+      + association_id                     = (known after apply)
+      + auto_provision_zones               = (known after apply)
+      + auto_scaling_ips                   = (known after apply)
+      + availability_mode                  = (known after apply)
+      + connectivity_type                  = "public"
+      + id                                 = (known after apply)
+      + network_interface_id               = (known after apply)
+      + private_ip                         = (known after apply)
+      + public_ip                          = (known after apply)
+      + region                             = "eu-west-2"
+      + regional_nat_gateway_address       = (known after apply)
+      + regional_nat_gateway_auto_mode     = (known after apply)
+      + route_table_id                     = (known after apply)
+      + secondary_allocation_ids           = (known after apply)
+      + secondary_private_ip_address_count = (known after apply)
+      + secondary_private_ip_addresses     = (known after apply)
+      + subnet_id                          = (known after apply)
+      + tags                               = {
+          + "Name"        = "nat-gateway"
+          + "description" = "NAT Gateway for private subnets, placed in public subnet eu-west-2a"
+        }
+      + tags_all                           = {
+          + "Name"        = "nat-gateway"
+          + "description" = "NAT Gateway for private subnets, placed in public subnet eu-west-2a"
+        }
+      + vpc_id                             = (known after apply)
+    }
+
+  # aws_route_table.private-route-table will be created
+  + resource "aws_route_table" "private-route-table" {
+      + arn              = (known after apply)
+      + id               = (known after apply)
+      + owner_id         = (known after apply)
+      + propagating_vgws = (known after apply)
+      + region           = "eu-west-2"
+      + route            = [
+          + {
+              + cidr_block                 = "0.0.0.0/0"
+              + nat_gateway_id             = (known after apply)
+                # (12 unchanged attributes hidden)
+            },
+        ]
+      + tags_all         = (known after apply)
+      + vpc_id           = (known after apply)
+    }
+
+  # aws_route_table.public-route-table will be created
+  + resource "aws_route_table" "public-route-table" {
+      + arn              = (known after apply)
+      + id               = (known after apply)
+      + owner_id         = (known after apply)
+      + propagating_vgws = (known after apply)
+      + region           = "eu-west-2"
+      + route            = [
+          + {
+              + cidr_block                 = "0.0.0.0/0"
+              + gateway_id                 = (known after apply)
+                # (12 unchanged attributes hidden)
+            },
+        ]
+      + tags_all         = (known after apply)
+      + vpc_id           = (known after apply)
+    }
+
+  # aws_route_table_association.private-route-table-association["eu-west-2a"] will be created
+  + resource "aws_route_table_association" "private-route-table-association" {
+      + id             = (known after apply)
+      + region         = "eu-west-2"
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # aws_route_table_association.private-route-table-association["eu-west-2b"] will be created
+  + resource "aws_route_table_association" "private-route-table-association" {
+      + id             = (known after apply)
+      + region         = "eu-west-2"
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # aws_route_table_association.private-route-table-association["eu-west-2c"] will be created
+  + resource "aws_route_table_association" "private-route-table-association" {
+      + id             = (known after apply)
+      + region         = "eu-west-2"
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # aws_route_table_association.public-route-table-association["eu-west-2a"] will be created
+  + resource "aws_route_table_association" "public-route-table-association" {
+      + id             = (known after apply)
+      + region         = "eu-west-2"
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # aws_route_table_association.public-route-table-association["eu-west-2b"] will be created
+  + resource "aws_route_table_association" "public-route-table-association" {
+      + id             = (known after apply)
+      + region         = "eu-west-2"
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # aws_route_table_association.public-route-table-association["eu-west-2c"] will be created
+  + resource "aws_route_table_association" "public-route-table-association" {
+      + id             = (known after apply)
+      + region         = "eu-west-2"
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # aws_security_group.Eks-control-plane-sg will be created
+  + resource "aws_security_group" "Eks-control-plane-sg" {
+      + arn                    = (known after apply)
+      + description            = "Security group for the EKS control plane, allowing secure communication between the cluster control plane and worker nodes"
+      + egress                 = (known after apply)
+      + id                     = (known after apply)
+      + ingress                = (known after apply)
+      + name                   = "sg for eks control plane"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + region                 = "eu-west-2"
+      + revoke_rules_on_delete = false
+      + tags_all               = (known after apply)
+      + vpc_id                 = (known after apply)
+    }
+
+  # aws_security_group.Eks-worker-node-sg will be created
+  + resource "aws_security_group" "Eks-worker-node-sg" {
+      + arn                    = (known after apply)
+      + description            = "Security group for the EKS worker nodes, allowing secure communication between the cluster control plane and other resources"
+      + egress                 = (known after apply)
+      + id                     = (known after apply)
+      + ingress                = (known after apply)
+      + name                   = "sg for worker-nodes"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + region                 = "eu-west-2"
+      + revoke_rules_on_delete = false
+      + tags_all               = (known after apply)
+      + vpc_id                 = (known after apply)
+    }
+
+  # aws_sqs_queue.eks_sqs will be created
+  + resource "aws_sqs_queue" "eks_sqs" {
+      + arn                               = (known after apply)
+      + content_based_deduplication       = false
+      + deduplication_scope               = (known after apply)
+      + delay_seconds                     = 90
+      + fifo_queue                        = false
+      + fifo_throughput_limit             = (known after apply)
+      + id                                = (known after apply)
+      + kms_data_key_reuse_period_seconds = (known after apply)
+      + max_message_size                  = 2048
+      + message_retention_seconds         = 86400
+      + name                              = "eks_sqs"
+      + name_prefix                       = (known after apply)
+      + policy                            = (known after apply)
+      + receive_wait_time_seconds         = 10
+      + redrive_allow_policy              = (known after apply)
+      + redrive_policy                    = (known after apply)
+      + region                            = "eu-west-2"
+      + sqs_managed_sse_enabled           = (known after apply)
+      + tags                              = {
+          + "Environment" = "production"
+        }
+      + tags_all                          = {
+          + "Environment" = "production"
+        }
+      + url                               = (known after apply)
+      + visibility_timeout_seconds        = 30
+    }
+
+  # aws_sqs_queue.eks_sqs_deadletter will be created
+  + resource "aws_sqs_queue" "eks_sqs_deadletter" {
+      + arn                               = (known after apply)
+      + content_based_deduplication       = false
+      + deduplication_scope               = (known after apply)
+      + delay_seconds                     = 0
+      + fifo_queue                        = false
+      + fifo_throughput_limit             = (known after apply)
+      + id                                = (known after apply)
+      + kms_data_key_reuse_period_seconds = (known after apply)
+      + max_message_size                  = 262144
+      + message_retention_seconds         = 345600
+      + name                              = "sqs_deadletter_queue"
+      + name_prefix                       = (known after apply)
+      + policy                            = (known after apply)
+      + receive_wait_time_seconds         = 0
+      + redrive_allow_policy              = (known after apply)
+      + redrive_policy                    = (known after apply)
+      + region                            = "eu-west-2"
+      + sqs_managed_sse_enabled           = (known after apply)
+      + tags_all                          = (known after apply)
+      + url                               = (known after apply)
+      + visibility_timeout_seconds        = 30
+    }
+
+  # aws_subnet.private-subnet["eu-west-2a"] will be created
+  + resource "aws_subnet" "private-subnet" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "eu-west-2a"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.0.4.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block                                = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = false
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + region                                         = "eu-west-2"
+      + tags                                           = {
+          + "Name" = "private-subnet-eu-west-2a"
+        }
+      + tags_all                                       = {
+          + "Name" = "private-subnet-eu-west-2a"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # aws_subnet.private-subnet["eu-west-2b"] will be created
+  + resource "aws_subnet" "private-subnet" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "eu-west-2b"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.0.5.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block                                = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = false
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + region                                         = "eu-west-2"
+      + tags                                           = {
+          + "Name" = "private-subnet-eu-west-2b"
+        }
+      + tags_all                                       = {
+          + "Name" = "private-subnet-eu-west-2b"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # aws_subnet.private-subnet["eu-west-2c"] will be created
+  + resource "aws_subnet" "private-subnet" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "eu-west-2c"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.0.6.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block                                = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = false
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + region                                         = "eu-west-2"
+      + tags                                           = {
+          + "Name" = "private-subnet-eu-west-2c"
+        }
+      + tags_all                                       = {
+          + "Name" = "private-subnet-eu-west-2c"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # aws_subnet.public-eks-subnet["eu-west-2a"] will be created
+  + resource "aws_subnet" "public-eks-subnet" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "eu-west-2a"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.0.1.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block                                = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = true
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + region                                         = "eu-west-2"
+      + tags                                           = {
+          + "Name" = "eks-subnet-eu-west-2a"
+        }
+      + tags_all                                       = {
+          + "Name" = "eks-subnet-eu-west-2a"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # aws_subnet.public-eks-subnet["eu-west-2b"] will be created
+  + resource "aws_subnet" "public-eks-subnet" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "eu-west-2b"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.0.2.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block                                = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = true
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + region                                         = "eu-west-2"
+      + tags                                           = {
+          + "Name" = "eks-subnet-eu-west-2b"
+        }
+      + tags_all                                       = {
+          + "Name" = "eks-subnet-eu-west-2b"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # aws_subnet.public-eks-subnet["eu-west-2c"] will be created
+  + resource "aws_subnet" "public-eks-subnet" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "eu-west-2c"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.0.3.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block                                = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = true
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + region                                         = "eu-west-2"
+      + tags                                           = {
+          + "Name" = "eks-subnet-eu-west-2c"
+        }
+      + tags_all                                       = {
+          + "Name" = "eks-subnet-eu-west-2c"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # aws_vpc.main will be created
+  + resource "aws_vpc" "main" {
+      + arn                                  = (known after apply)
+      + cidr_block                           = "10.0.0.0/16"
+      + default_network_acl_id               = (known after apply)
+      + default_route_table_id               = (known after apply)
+      + default_security_group_id            = (known after apply)
+      + dhcp_options_id                      = (known after apply)
+      + enable_dns_hostnames                 = (known after apply)
+      + enable_dns_support                   = true
+      + enable_network_address_usage_metrics = (known after apply)
+      + id                                   = (known after apply)
+      + instance_tenancy                     = "default"
+      + ipv6_association_id                  = (known after apply)
+      + ipv6_cidr_block                      = (known after apply)
+      + ipv6_cidr_block_network_border_group = (known after apply)
+      + main_route_table_id                  = (known after apply)
+      + owner_id                             = (known after apply)
+      + region                               = "eu-west-2"
+      + tags                                 = {
+          + "Name" = "eks-vpc"
+        }
+      + tags_all                             = {
+          + "Name" = "eks-vpc"
+        }
+    }
+
+  # aws_vpc_security_group_egress_rule.egress-control-plane-rule will be created
+  + resource "aws_vpc_security_group_egress_rule" "egress-control-plane-rule" {
+      + arn                    = (known after apply)
+      + cidr_ipv4              = "0.0.0.0/0"
+      + id                     = (known after apply)
+      + ip_protocol            = "-1"
+      + region                 = "eu-west-2"
+      + security_group_id      = (known after apply)
+      + security_group_rule_id = (known after apply)
+      + tags_all               = {}
+    }
+
+  # aws_vpc_security_group_egress_rule.egress_worker_node_rule will be created
+  + resource "aws_vpc_security_group_egress_rule" "egress_worker_node_rule" {
+      + arn                    = (known after apply)
+      + cidr_ipv4              = "0.0.0.0/0"
+      + id                     = (known after apply)
+      + ip_protocol            = "-1"
+      + region                 = "eu-west-2"
+      + security_group_id      = (known after apply)
+      + security_group_rule_id = (known after apply)
+      + tags_all               = {}
+    }
+
+  # aws_vpc_security_group_ingress_rule.ingress-control-plane-rule will be created
+  + resource "aws_vpc_security_group_ingress_rule" "ingress-control-plane-rule" {
+      + arn                    = (known after apply)
+      + cidr_ipv4              = "10.0.0.0/16"
+      + from_port              = 443
+      + id                     = (known after apply)
+      + ip_protocol            = "tcp"
+      + region                 = "eu-west-2"
+      + security_group_id      = (known after apply)
+      + security_group_rule_id = (known after apply)
+      + tags_all               = {}
+      + to_port                = 443
+    }
+
+  # aws_vpc_security_group_ingress_rule.ingress_worker_node_cluster_rule will be created
+  + resource "aws_vpc_security_group_ingress_rule" "ingress_worker_node_cluster_rule" {
+      + arn                          = (known after apply)
+      + description                  = "for communication from the control plane"
+      + from_port                    = 10250
+      + id                           = (known after apply)
+      + ip_protocol                  = "tcp"
+      + referenced_security_group_id = (known after apply)
+      + region                       = "eu-west-2"
+      + security_group_id            = (known after apply)
+      + security_group_rule_id       = (known after apply)
+      + tags_all                     = {}
+      + to_port                      = 10250
+    }
+
+  # aws_vpc_security_group_ingress_rule.ingress_worker_node_rule will be created
+  + resource "aws_vpc_security_group_ingress_rule" "ingress_worker_node_rule" {
+      + arn                    = (known after apply)
+      + cidr_ipv4              = "10.0.0.0/16"
+      + from_port              = 443
+      + id                     = (known after apply)
+      + ip_protocol            = "tcp"
+      + region                 = "eu-west-2"
+      + security_group_id      = (known after apply)
+      + security_group_rule_id = (known after apply)
+      + tags_all               = {}
+      + to_port                = 443
+    }
+
+  # helm_release.argocd_deploy will be created
+  + resource "helm_release" "argocd_deploy" {
+      + atomic                     = false
+      + chart                      = "argo-cd"
+      + cleanup_on_fail            = false
+      + create_namespace           = true
+      + dependency_update          = false
+      + disable_crd_hooks          = false
+      + disable_openapi_validation = false
+      + disable_webhooks           = false
+      + force_update               = false
+      + id                         = (known after apply)
+      + lint                       = false
+      + max_history                = 0
+      + metadata                   = (known after apply)
+      + name                       = "argocd"
+      + namespace                  = "argo-cd"
+      + pass_credentials           = false
+      + recreate_pods              = false
+      + render_subchart_notes      = true
+      + replace                    = false
+      + repository                 = "https://argoproj.github.io/argo-helm"
+      + reset_values               = false
+      + reuse_values               = false
+      + set_wo                     = (write-only attribute)
+      + skip_crds                  = false
+      + status                     = "deployed"
+      + take_ownership             = false
+      + timeout                    = 600
+      + upgrade_install            = false
+      + values                     = [
+          + <<-EOT
+                server:
+                
+                  extraArgs:
+                  - --insecure
+                  service: 
+                    type: ClusterIP
+                  ingress:
+                    enabled: true
+                    ingressClassName: "traefik"
+                    annotations:
+                      cert-manager.io/cluster-issuer: issuer
+                    hosts:
+                    - argocd.ecommerce.zakariyaalab.com
+                    tls:
+                    - secretName: argocd-ingress-tls
+                      hosts:
+                      - argocd.ecommerce.zakariyaalab.com
+            EOT,
+        ]
+      + verify                     = false
+      + version                    = "5.19.15"
+      + wait                       = true
+      + wait_for_jobs              = false
+    }
+
+  # helm_release.cert_manager will be created
+  + resource "helm_release" "cert_manager" {
+      + atomic                     = false
+      + chart                      = "cert-manager"
+      + cleanup_on_fail            = false
+      + create_namespace           = true
+      + dependency_update          = false
+      + disable_crd_hooks          = false
+      + disable_openapi_validation = false
+      + disable_webhooks           = false
+      + force_update               = false
+      + id                         = (known after apply)
+      + lint                       = false
+      + max_history                = 0
+      + metadata                   = (known after apply)
+      + name                       = "cert-manager"
+      + namespace                  = "cert-manager"
+      + pass_credentials           = false
+      + recreate_pods              = false
+      + render_subchart_notes      = true
+      + replace                    = false
+      + repository                 = "https://charts.jetstack.io"
+      + reset_values               = false
+      + reuse_values               = false
+      + set_wo                     = (write-only attribute)
+      + skip_crds                  = false
+      + status                     = "deployed"
+      + take_ownership             = false
+      + timeout                    = 300
+      + upgrade_install            = false
+      + values                     = [
+          + <<-EOT
+                crds:
+                  enabled: true
+                
+                serviceAccount:
+                  create: true
+                  name: cert-manager
+                  annotations:
+                    eks.amazonaws.com/role-arn: ${module.cert_manager_irsa_role.iam_role_arn}
+            EOT,
+        ]
+      + verify                     = false
+      + version                    = "v1.21.0"
+      + wait                       = true
+      + wait_for_jobs              = false
+    }
+
+  # helm_release.external_dns will be created
+  + resource "helm_release" "external_dns" {
+      + atomic                     = false
+      + chart                      = "external-dns"
+      + cleanup_on_fail            = false
+      + create_namespace           = true
+      + dependency_update          = false
+      + disable_crd_hooks          = false
+      + disable_openapi_validation = false
+      + disable_webhooks           = false
+      + force_update               = false
+      + id                         = (known after apply)
+      + lint                       = false
+      + max_history                = 0
+      + metadata                   = (known after apply)
+      + name                       = "external-dns"
+      + namespace                  = "external-dns"
+      + pass_credentials           = false
+      + recreate_pods              = false
+      + render_subchart_notes      = true
+      + replace                    = false
+      + repository                 = "https://kubernetes-sigs.github.io/external-dns/"
+      + reset_values               = false
+      + reuse_values               = false
+      + set_wo                     = (write-only attribute)
+      + skip_crds                  = false
+      + status                     = "deployed"
+      + take_ownership             = false
+      + timeout                    = 300
+      + upgrade_install            = false
+      + values                     = [
+          + <<-EOT
+                installCRDs: true
+            EOT,
+          + <<-EOT
+                provider: aws
+                
+                env:
+                - name: AWS_DEFAULT_REGION
+                  value: eu-west-2
+                
+                
+                serviceAccount:
+                  create: true
+                  name: external-dns
+                  annotations:
+                    eks.amazonaws.com/role-arn: ${module.external-dns.iam_role_arn}
+                
+                
+                domainFilters:
+                - ecommerce.zakariyaalab.com
+            EOT,
+        ]
+      + verify                     = false
+      + version                    = "1.21.1"
+      + wait                       = true
+      + wait_for_jobs              = false
+    }
+
+  # helm_release.traefik will be created
+  + resource "helm_release" "traefik" {
+      + atomic                     = false
+      + chart                      = "traefik"
+      + cleanup_on_fail            = false
+      + create_namespace           = true
+      + dependency_update          = false
+      + disable_crd_hooks          = false
+      + disable_openapi_validation = false
+      + disable_webhooks           = false
+      + force_update               = false
+      + id                         = (known after apply)
+      + lint                       = false
+      + max_history                = 0
+      + metadata                   = (known after apply)
+      + name                       = "traefik"
+      + namespace                  = "traefik"
+      + pass_credentials           = false
+      + recreate_pods              = false
+      + render_subchart_notes      = true
+      + replace                    = false
+      + repository                 = "https://traefik.github.io/charts"
+      + reset_values               = false
+      + reuse_values               = false
+      + set_wo                     = (write-only attribute)
+      + skip_crds                  = false
+      + status                     = "deployed"
+      + take_ownership             = false
+      + timeout                    = 300
+      + upgrade_install            = false
+      + values                     = [
+          + <<-EOT
+                installCRDs: true
+            EOT,
+          + <<-EOT
+                ingressroute:
+                  dashboard:
+                    enabled: true
+                
+                
+                env:
+                  - name: USER
+                    value: "traefik"
+                
+                service:
+                  type: LoadBalancer
+                  annotations:
+                    service.beta.kubernetes.io/aws-load-balancer-type: "external"
+                    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+            EOT,
+        ]
+      + verify                     = false
+      + version                    = "39.0.0"
+      + wait                       = true
+      + wait_for_jobs              = false
+    }
+
+  # module.cert_manager_irsa_role.data.aws_iam_policy_document.this[0] will be read during apply
+  # (config refers to values not yet known)
+ <= data "aws_iam_policy_document" "this" {
+      + id            = (known after apply)
+      + json          = (known after apply)
+      + minified_json = (known after apply)
+
+      + statement {
+          + actions = [
+              + "sts:AssumeRoleWithWebIdentity",
+            ]
+          + effect  = "Allow"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "sts.amazonaws.com",
+                ]
+              + variable = (known after apply)
+            }
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "system:serviceaccount:cert-manager:cert-manager",
+                ]
+              + variable = (known after apply)
+            }
+
+          + principals {
+              + identifiers = [
+                  + (known after apply),
+                ]
+              + type        = "Federated"
+            }
+        }
+    }
+
+  # module.cert_manager_irsa_role.aws_iam_policy.cert_manager[0] will be created
+  + resource "aws_iam_policy" "cert_manager" {
+      + arn              = (known after apply)
+      + attachment_count = (known after apply)
+      + description      = "Cert Manager policy to allow management of Route53 hosted zone records"
+      + id               = (known after apply)
+      + name             = (known after apply)
+      + name_prefix      = "AmazonEKS_Cert_Manager_Policy-"
+      + path             = "/"
+      + policy           = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action   = "route53:GetChange"
+                      + Effect   = "Allow"
+                      + Resource = "arn:aws:route53:::change/*"
+                    },
+                  + {
+                      + Action   = [
+                          + "route53:ListResourceRecordSets",
+                          + "route53:ChangeResourceRecordSets",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "arn:aws:route53:::hostedzone/Z101674438AEID6T19NFK"
+                    },
+                  + {
+                      + Action   = "route53:ListHostedZonesByName"
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + policy_id        = (known after apply)
+      + tags_all         = (known after apply)
+    }
+
+  # module.cert_manager_irsa_role.aws_iam_role.this[0] will be created
+  + resource "aws_iam_role" "this" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = (known after apply)
+      + create_date           = (known after apply)
+      + force_detach_policies = true
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "cert-manager"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags_all              = (known after apply)
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # module.cert_manager_irsa_role.aws_iam_role_policy_attachment.cert_manager[0] will be created
+  + resource "aws_iam_role_policy_attachment" "cert_manager" {
+      + id         = (known after apply)
+      + policy_arn = (known after apply)
+      + role       = "cert-manager"
+    }
+
+  # module.external-dns.data.aws_iam_policy_document.this[0] will be read during apply
+  # (config refers to values not yet known)
+ <= data "aws_iam_policy_document" "this" {
+      + id            = (known after apply)
+      + json          = (known after apply)
+      + minified_json = (known after apply)
+
+      + statement {
+          + actions = [
+              + "sts:AssumeRoleWithWebIdentity",
+            ]
+          + effect  = "Allow"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "sts.amazonaws.com",
+                ]
+              + variable = (known after apply)
+            }
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "system:serviceaccount:external-dns:external-dns",
+                ]
+              + variable = (known after apply)
+            }
+
+          + principals {
+              + identifiers = [
+                  + (known after apply),
+                ]
+              + type        = "Federated"
+            }
+        }
+    }
+
+  # module.external-dns.aws_iam_policy.external_dns[0] will be created
+  + resource "aws_iam_policy" "external_dns" {
+      + arn              = (known after apply)
+      + attachment_count = (known after apply)
+      + description      = "External DNS policy to allow management of Route53 hosted zone records"
+      + id               = (known after apply)
+      + name             = (known after apply)
+      + name_prefix      = "AmazonEKS_External_DNS_Policy-"
+      + path             = "/"
+      + policy           = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action   = "route53:ChangeResourceRecordSets"
+                      + Effect   = "Allow"
+                      + Resource = "arn:aws:route53:::hostedzone/Z101674438AEID6T19NFK"
+                    },
+                  + {
+                      + Action   = [
+                          + "route53:ListTagsForResources",
+                          + "route53:ListResourceRecordSets",
+                          + "route53:ListHostedZones",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + policy_id        = (known after apply)
+      + tags_all         = (known after apply)
+    }
+
+  # module.external-dns.aws_iam_role.this[0] will be created
+  + resource "aws_iam_role" "this" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = (known after apply)
+      + create_date           = (known after apply)
+      + force_detach_policies = true
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "external-dns"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags_all              = (known after apply)
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # module.external-dns.aws_iam_role_policy_attachment.external_dns[0] will be created
+  + resource "aws_iam_role_policy_attachment" "external_dns" {
+      + id         = (known after apply)
+      + policy_arn = (known after apply)
+      + role       = "external-dns"
+    }
+
+  # module.karpenter.data.aws_iam_policy_document.controller[0] will be read during apply
+  # (config refers to values not yet known)
+ <= data "aws_iam_policy_document" "controller" {
+      + id            = (known after apply)
+      + json          = (known after apply)
+      + minified_json = (known after apply)
+
+      + statement {
+          + actions   = [
+              + "ec2:CreateFleet",
+              + "ec2:RunInstances",
+            ]
+          + resources = [
+              + "arn:aws:ec2:eu-west-2:*:capacity-reservation/*",
+              + "arn:aws:ec2:eu-west-2:*:placement-group/*",
+              + "arn:aws:ec2:eu-west-2:*:security-group/*",
+              + "arn:aws:ec2:eu-west-2:*:subnet/*",
+              + "arn:aws:ec2:eu-west-2::image/*",
+              + "arn:aws:ec2:eu-west-2::snapshot/*",
+            ]
+          + sid       = "AllowScopedEC2InstanceAccessActions"
+        }
+      + statement {
+          + actions   = [
+              + "ec2:CreateFleet",
+              + "ec2:RunInstances",
+            ]
+          + resources = [
+              + "arn:aws:ec2:eu-west-2:*:launch-template/*",
+            ]
+          + sid       = "AllowScopedEC2LaunchTemplateAccessActions"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "owned",
+                ]
+              + variable = "aws:ResourceTag/kubernetes.io/cluster/eks-cluster"
+            }
+          + condition {
+              + test     = "StringLike"
+              + values   = [
+                  + "*",
+                ]
+              + variable = "aws:ResourceTag/karpenter.sh/nodepool"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "ec2:CreateFleet",
+              + "ec2:CreateLaunchTemplate",
+              + "ec2:RunInstances",
+            ]
+          + resources = [
+              + "arn:aws:ec2:eu-west-2:*:capacity-reservation/*",
+              + "arn:aws:ec2:eu-west-2:*:fleet/*",
+              + "arn:aws:ec2:eu-west-2:*:instance/*",
+              + "arn:aws:ec2:eu-west-2:*:launch-template/*",
+              + "arn:aws:ec2:eu-west-2:*:network-interface/*",
+              + "arn:aws:ec2:eu-west-2:*:spot-instances-request/*",
+              + "arn:aws:ec2:eu-west-2:*:volume/*",
+            ]
+          + sid       = "AllowScopedEC2InstanceActionsWithTags"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "eks-cluster",
+                ]
+              + variable = "aws:RequestTag/eks:eks-cluster-name"
+            }
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "owned",
+                ]
+              + variable = "aws:RequestTag/kubernetes.io/cluster/eks-cluster"
+            }
+          + condition {
+              + test     = "StringLike"
+              + values   = [
+                  + "*",
+                ]
+              + variable = "aws:RequestTag/karpenter.sh/nodepool"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "ec2:CreateTags",
+            ]
+          + resources = [
+              + "arn:aws:ec2:eu-west-2:*:fleet/*",
+              + "arn:aws:ec2:eu-west-2:*:instance/*",
+              + "arn:aws:ec2:eu-west-2:*:launch-template/*",
+              + "arn:aws:ec2:eu-west-2:*:network-interface/*",
+              + "arn:aws:ec2:eu-west-2:*:spot-instances-request/*",
+              + "arn:aws:ec2:eu-west-2:*:volume/*",
+            ]
+          + sid       = "AllowScopedResourceCreationTagging"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "RunInstances",
+                  + "CreateFleet",
+                  + "CreateLaunchTemplate",
+                ]
+              + variable = "ec2:CreateAction"
+            }
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "eks-cluster",
+                ]
+              + variable = "aws:RequestTag/eks:eks-cluster-name"
+            }
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "owned",
+                ]
+              + variable = "aws:RequestTag/kubernetes.io/cluster/eks-cluster"
+            }
+          + condition {
+              + test     = "StringLike"
+              + values   = [
+                  + "*",
+                ]
+              + variable = "aws:RequestTag/karpenter.sh/nodepool"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "ec2:CreateTags",
+            ]
+          + resources = [
+              + "arn:aws:ec2:eu-west-2:*:instance/*",
+            ]
+          + sid       = "AllowScopedResourceTagging"
+
+          + condition {
+              + test     = "ForAllValues:StringEquals"
+              + values   = [
+                  + "eks:eks-cluster-name",
+                  + "karpenter.sh/nodeclaim",
+                  + "Name",
+                ]
+              + variable = "aws:TagKeys"
+            }
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "owned",
+                ]
+              + variable = "aws:ResourceTag/kubernetes.io/cluster/eks-cluster"
+            }
+          + condition {
+              + test     = "StringEqualsIfExists"
+              + values   = [
+                  + "eks-cluster",
+                ]
+              + variable = "aws:RequestTag/eks:eks-cluster-name"
+            }
+          + condition {
+              + test     = "StringLike"
+              + values   = [
+                  + "*",
+                ]
+              + variable = "aws:ResourceTag/karpenter.sh/nodepool"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "ec2:DeleteLaunchTemplate",
+              + "ec2:TerminateInstances",
+            ]
+          + resources = [
+              + "arn:aws:ec2:eu-west-2:*:instance/*",
+              + "arn:aws:ec2:eu-west-2:*:launch-template/*",
+            ]
+          + sid       = "AllowScopedDeletion"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "owned",
+                ]
+              + variable = "aws:ResourceTag/kubernetes.io/cluster/eks-cluster"
+            }
+          + condition {
+              + test     = "StringLike"
+              + values   = [
+                  + "*",
+                ]
+              + variable = "aws:ResourceTag/karpenter.sh/nodepool"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "ec2:DescribeAvailabilityZones",
+              + "ec2:DescribeCapacityReservations",
+              + "ec2:DescribeImages",
+              + "ec2:DescribeInstanceStatus",
+              + "ec2:DescribeInstanceTypeOfferings",
+              + "ec2:DescribeInstanceTypes",
+              + "ec2:DescribeInstances",
+              + "ec2:DescribeLaunchTemplates",
+              + "ec2:DescribePlacementGroups",
+              + "ec2:DescribeSecurityGroups",
+              + "ec2:DescribeSpotPriceHistory",
+              + "ec2:DescribeSubnets",
+            ]
+          + resources = [
+              + "*",
+            ]
+          + sid       = "AllowRegionalReadActions"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "eu-west-2",
+                ]
+              + variable = "aws:RequestedRegion"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "ssm:GetParameter",
+            ]
+          + resources = [
+              + "arn:aws:ssm:eu-west-2::parameter/aws/service/*",
+            ]
+          + sid       = "AllowSSMReadActions"
+        }
+      + statement {
+          + actions   = [
+              + "pricing:GetProducts",
+            ]
+          + resources = [
+              + "*",
+            ]
+          + sid       = "AllowPricingReadActions"
+        }
+      + statement {
+          + actions   = [
+              + "arc-zonal-shift:GetManagedResource",
+            ]
+          + resources = [
+              + "*",
+            ]
+          + sid       = "AllowZonalShiftReadActions"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "arn:aws:eks:eu-west-2:499024813019:cluster/eks-cluster",
+                ]
+              + variable = "arc-zonal-shift:ResourceIdentifier"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "sqs:DeleteMessage",
+              + "sqs:GetQueueUrl",
+              + "sqs:ReceiveMessage",
+            ]
+          + resources = [
+              + (known after apply),
+            ]
+          + sid       = "AllowInterruptionQueueActions"
+        }
+      + statement {
+          + actions   = [
+              + "iam:PassRole",
+            ]
+          + resources = [
+              + (known after apply),
+            ]
+          + sid       = "AllowPassingInstanceRole"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "ec2.amazonaws.com",
+                ]
+              + variable = "iam:PassedToService"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "iam:CreateInstanceProfile",
+            ]
+          + resources = [
+              + "arn:aws:iam::499024813019:instance-profile/*",
+            ]
+          + sid       = "AllowScopedInstanceProfileCreationActions"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "eks-cluster",
+                ]
+              + variable = "aws:RequestTag/eks:eks-cluster-name"
+            }
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "eu-west-2",
+                ]
+              + variable = "aws:RequestTag/topology.kubernetes.io/region"
+            }
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "owned",
+                ]
+              + variable = "aws:RequestTag/kubernetes.io/cluster/eks-cluster"
+            }
+          + condition {
+              + test     = "StringLike"
+              + values   = [
+                  + "*",
+                ]
+              + variable = "aws:RequestTag/karpenter.k8s.aws/ec2nodeclass"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "iam:TagInstanceProfile",
+            ]
+          + resources = [
+              + "arn:aws:iam::499024813019:instance-profile/*",
+            ]
+          + sid       = "AllowScopedInstanceProfileTagActions"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "eks-cluster",
+                ]
+              + variable = "aws:RequestTag/eks:eks-cluster-name"
+            }
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "eu-west-2",
+                ]
+              + variable = "aws:RequestTag/topology.kubernetes.io/region"
+            }
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "eu-west-2",
+                ]
+              + variable = "aws:ResourceTag/topology.kubernetes.io/region"
+            }
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "owned",
+                ]
+              + variable = "aws:RequestTag/kubernetes.io/cluster/eks-cluster"
+            }
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "owned",
+                ]
+              + variable = "aws:ResourceTag/kubernetes.io/cluster/eks-cluster"
+            }
+          + condition {
+              + test     = "StringLike"
+              + values   = [
+                  + "*",
+                ]
+              + variable = "aws:RequestTag/karpenter.k8s.aws/ec2nodeclass"
+            }
+          + condition {
+              + test     = "StringLike"
+              + values   = [
+                  + "*",
+                ]
+              + variable = "aws:ResourceTag/karpenter.k8s.aws/ec2nodeclass"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "iam:AddRoleToInstanceProfile",
+              + "iam:DeleteInstanceProfile",
+              + "iam:RemoveRoleFromInstanceProfile",
+            ]
+          + resources = [
+              + "arn:aws:iam::499024813019:instance-profile/*",
+            ]
+          + sid       = "AllowScopedInstanceProfileActions"
+
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "eu-west-2",
+                ]
+              + variable = "aws:ResourceTag/topology.kubernetes.io/region"
+            }
+          + condition {
+              + test     = "StringEquals"
+              + values   = [
+                  + "owned",
+                ]
+              + variable = "aws:ResourceTag/kubernetes.io/cluster/eks-cluster"
+            }
+          + condition {
+              + test     = "StringLike"
+              + values   = [
+                  + "*",
+                ]
+              + variable = "aws:ResourceTag/karpenter.k8s.aws/ec2nodeclass"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "iam:GetInstanceProfile",
+            ]
+          + resources = [
+              + "arn:aws:iam::499024813019:instance-profile/*",
+            ]
+          + sid       = "AllowInstanceProfileReadActions"
+        }
+      + statement {
+          + actions   = [
+              + "iam:ListInstanceProfiles",
+            ]
+          + resources = [
+              + "*",
+            ]
+          + sid       = "AllowUnscopedInstanceProfileListAction"
+        }
+      + statement {
+          + actions   = [
+              + "eks:DescribeCluster",
+            ]
+          + resources = [
+              + "arn:aws:eks:eu-west-2:499024813019:cluster/eks-cluster",
+            ]
+          + sid       = "AllowAPIServerEndpointDiscovery"
+        }
+    }
+
+  # module.karpenter.data.aws_iam_policy_document.queue[0] will be read during apply
+  # (config refers to values not yet known)
+ <= data "aws_iam_policy_document" "queue" {
+      + id            = (known after apply)
+      + json          = (known after apply)
+      + minified_json = (known after apply)
+
+      + statement {
+          + actions   = [
+              + "sqs:SendMessage",
+            ]
+          + resources = [
+              + (known after apply),
+            ]
+          + sid       = "SqsWrite"
+
+          + principals {
+              + identifiers = [
+                  + "events.amazonaws.com",
+                  + "sqs.amazonaws.com",
+                ]
+              + type        = "Service"
+            }
+        }
+      + statement {
+          + actions   = [
+              + "sqs:*",
+            ]
+          + effect    = "Deny"
+          + resources = [
+              + (known after apply),
+            ]
+          + sid       = "DenyHTTP"
+
+          + condition {
+              + test     = "Bool"
+              + values   = [
+                  + "false",
+                ]
+              + variable = "aws:SecureTransport"
+            }
+
+          + principals {
+              + identifiers = [
+                  + "*",
+                ]
+              + type        = "*"
+            }
+        }
+    }
+
+  # module.karpenter.aws_cloudwatch_event_rule.this["capacity_reservation_interruption"] will be created
+  + resource "aws_cloudwatch_event_rule" "this" {
+      + arn            = (known after apply)
+      + description    = "Karpenter interrupt - EC2 capacity reservation instance interruption warning"
+      + event_bus_name = "default"
+      + event_pattern  = jsonencode(
+            {
+              + detail-type = [
+                  + "EC2 Capacity Reservation Instance Interruption Warning",
+                ]
+              + source      = [
+                  + "aws.ec2",
+                ]
+            }
+        )
+      + force_destroy  = false
+      + id             = (known after apply)
+      + name           = (known after apply)
+      + name_prefix    = "KarpenterCRInterruption-"
+      + region         = "eu-west-2"
+      + tags           = {
+          + "ClusterName" = "eks-cluster"
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+      + tags_all       = {
+          + "ClusterName" = "eks-cluster"
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+    }
+
+  # module.karpenter.aws_cloudwatch_event_rule.this["health_event"] will be created
+  + resource "aws_cloudwatch_event_rule" "this" {
+      + arn            = (known after apply)
+      + description    = "Karpenter interrupt - AWS health event"
+      + event_bus_name = "default"
+      + event_pattern  = jsonencode(
+            {
+              + detail-type = [
+                  + "AWS Health Event",
+                ]
+              + source      = [
+                  + "aws.health",
+                ]
+            }
+        )
+      + force_destroy  = false
+      + id             = (known after apply)
+      + name           = (known after apply)
+      + name_prefix    = "KarpenterHealthEvent-"
+      + region         = "eu-west-2"
+      + tags           = {
+          + "ClusterName" = "eks-cluster"
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+      + tags_all       = {
+          + "ClusterName" = "eks-cluster"
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+    }
+
+  # module.karpenter.aws_cloudwatch_event_rule.this["instance_rebalance"] will be created
+  + resource "aws_cloudwatch_event_rule" "this" {
+      + arn            = (known after apply)
+      + description    = "Karpenter interrupt - EC2 instance rebalance recommendation"
+      + event_bus_name = "default"
+      + event_pattern  = jsonencode(
+            {
+              + detail-type = [
+                  + "EC2 Instance Rebalance Recommendation",
+                ]
+              + source      = [
+                  + "aws.ec2",
+                ]
+            }
+        )
+      + force_destroy  = false
+      + id             = (known after apply)
+      + name           = (known after apply)
+      + name_prefix    = "KarpenterInstanceRebalance-"
+      + region         = "eu-west-2"
+      + tags           = {
+          + "ClusterName" = "eks-cluster"
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+      + tags_all       = {
+          + "ClusterName" = "eks-cluster"
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+    }
+
+  # module.karpenter.aws_cloudwatch_event_rule.this["instance_state_change"] will be created
+  + resource "aws_cloudwatch_event_rule" "this" {
+      + arn            = (known after apply)
+      + description    = "Karpenter interrupt - EC2 instance state-change notification"
+      + event_bus_name = "default"
+      + event_pattern  = jsonencode(
+            {
+              + detail-type = [
+                  + "EC2 Instance State-change Notification",
+                ]
+              + source      = [
+                  + "aws.ec2",
+                ]
+            }
+        )
+      + force_destroy  = false
+      + id             = (known after apply)
+      + name           = (known after apply)
+      + name_prefix    = "KarpenterInstanceStateChange-"
+      + region         = "eu-west-2"
+      + tags           = {
+          + "ClusterName" = "eks-cluster"
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+      + tags_all       = {
+          + "ClusterName" = "eks-cluster"
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+    }
+
+  # module.karpenter.aws_cloudwatch_event_rule.this["spot_interrupt"] will be created
+  + resource "aws_cloudwatch_event_rule" "this" {
+      + arn            = (known after apply)
+      + description    = "Karpenter interrupt - EC2 spot instance interruption warning"
+      + event_bus_name = "default"
+      + event_pattern  = jsonencode(
+            {
+              + detail-type = [
+                  + "EC2 Spot Instance Interruption Warning",
+                ]
+              + source      = [
+                  + "aws.ec2",
+                ]
+            }
+        )
+      + force_destroy  = false
+      + id             = (known after apply)
+      + name           = (known after apply)
+      + name_prefix    = "KarpenterSpotInterrupt-"
+      + region         = "eu-west-2"
+      + tags           = {
+          + "ClusterName" = "eks-cluster"
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+      + tags_all       = {
+          + "ClusterName" = "eks-cluster"
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+    }
+
+  # module.karpenter.aws_cloudwatch_event_target.this["capacity_reservation_interruption"] will be created
+  + resource "aws_cloudwatch_event_target" "this" {
+      + arn            = (known after apply)
+      + event_bus_name = "default"
+      + force_destroy  = false
+      + id             = (known after apply)
+      + region         = "eu-west-2"
+      + rule           = (known after apply)
+      + target_id      = "KarpenterInterruptionQueueTarget"
+    }
+
+  # module.karpenter.aws_cloudwatch_event_target.this["health_event"] will be created
+  + resource "aws_cloudwatch_event_target" "this" {
+      + arn            = (known after apply)
+      + event_bus_name = "default"
+      + force_destroy  = false
+      + id             = (known after apply)
+      + region         = "eu-west-2"
+      + rule           = (known after apply)
+      + target_id      = "KarpenterInterruptionQueueTarget"
+    }
+
+  # module.karpenter.aws_cloudwatch_event_target.this["instance_rebalance"] will be created
+  + resource "aws_cloudwatch_event_target" "this" {
+      + arn            = (known after apply)
+      + event_bus_name = "default"
+      + force_destroy  = false
+      + id             = (known after apply)
+      + region         = "eu-west-2"
+      + rule           = (known after apply)
+      + target_id      = "KarpenterInterruptionQueueTarget"
+    }
+
+  # module.karpenter.aws_cloudwatch_event_target.this["instance_state_change"] will be created
+  + resource "aws_cloudwatch_event_target" "this" {
+      + arn            = (known after apply)
+      + event_bus_name = "default"
+      + force_destroy  = false
+      + id             = (known after apply)
+      + region         = "eu-west-2"
+      + rule           = (known after apply)
+      + target_id      = "KarpenterInterruptionQueueTarget"
+    }
+
+  # module.karpenter.aws_cloudwatch_event_target.this["spot_interrupt"] will be created
+  + resource "aws_cloudwatch_event_target" "this" {
+      + arn            = (known after apply)
+      + event_bus_name = "default"
+      + force_destroy  = false
+      + id             = (known after apply)
+      + region         = "eu-west-2"
+      + rule           = (known after apply)
+      + target_id      = "KarpenterInterruptionQueueTarget"
+    }
+
+  # module.karpenter.aws_eks_access_entry.node[0] will be created
+  + resource "aws_eks_access_entry" "node" {
+      + access_entry_arn  = (known after apply)
+      + cluster_name      = "eks-cluster"
+      + created_at        = (known after apply)
+      + id                = (known after apply)
+      + kubernetes_groups = (known after apply)
+      + modified_at       = (known after apply)
+      + principal_arn     = (known after apply)
+      + region            = "eu-west-2"
+      + tags              = {
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+      + tags_all          = {
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+      + type              = "EC2_LINUX"
+      + user_name         = (known after apply)
+    }
+
+  # module.karpenter.aws_eks_pod_identity_association.karpenter[0] will be created
+  + resource "aws_eks_pod_identity_association" "karpenter" {
+      + association_arn      = (known after apply)
+      + association_id       = (known after apply)
+      + cluster_name         = "eks-cluster"
+      + disable_session_tags = false
+      + external_id          = (known after apply)
+      + id                   = (known after apply)
+      + namespace            = "kube-system"
+      + region               = "eu-west-2"
+      + role_arn             = (known after apply)
+      + service_account      = "karpenter"
+      + tags                 = {
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+      + tags_all             = {
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+    }
+
+  # module.karpenter.aws_iam_policy.controller[0] will be created
+  + resource "aws_iam_policy" "controller" {
+      + arn              = (known after apply)
+      + attachment_count = (known after apply)
+      + description      = "Karpenter controller IAM policy"
+      + id               = (known after apply)
+      + name             = (known after apply)
+      + name_prefix      = "KarpenterController-"
+      + path             = "/"
+      + policy           = (known after apply)
+      + policy_id        = (known after apply)
+      + tags             = {
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+      + tags_all         = {
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+    }
+
+  # module.karpenter.aws_iam_role.controller[0] will be created
+  + resource "aws_iam_role" "controller" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = [
+                          + "sts:TagSession",
+                          + "sts:AssumeRole",
+                        ]
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "pods.eks.amazonaws.com"
+                        }
+                      + Sid       = "PodIdentity"
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + description           = "Karpenter controller IAM role"
+      + force_detach_policies = true
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = (known after apply)
+      + name_prefix           = "KarpenterController-"
+      + path                  = "/"
+      + tags                  = {
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+      + tags_all              = {
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # module.karpenter.aws_iam_role.node[0] will be created
+  + resource "aws_iam_role" "node" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "ec2.amazonaws.com"
+                        }
+                      + Sid       = "EKSNodeAssumeRole"
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = true
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = (known after apply)
+      + name_prefix           = "Karpenter-eks-cluster-"
+      + path                  = "/"
+      + tags                  = {
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+      + tags_all              = {
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # module.karpenter.aws_iam_role_policy_attachment.controller[0] will be created
+  + resource "aws_iam_role_policy_attachment" "controller" {
+      + id         = (known after apply)
+      + policy_arn = (known after apply)
+      + role       = (known after apply)
+    }
+
+  # module.karpenter.aws_iam_role_policy_attachment.node["AmazonEC2ContainerRegistryPullOnly"] will be created
+  + resource "aws_iam_role_policy_attachment" "node" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
+      + role       = (known after apply)
+    }
+
+  # module.karpenter.aws_iam_role_policy_attachment.node["AmazonEKSWorkerNodePolicy"] will be created
+  + resource "aws_iam_role_policy_attachment" "node" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+      + role       = (known after apply)
+    }
+
+  # module.karpenter.aws_iam_role_policy_attachment.node["AmazonEKS_CNI_Policy"] will be created
+  + resource "aws_iam_role_policy_attachment" "node" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+      + role       = (known after apply)
+    }
+
+  # module.karpenter.aws_iam_role_policy_attachment.node_additional["AmazonSSMManagedInstanceCore"] will be created
+  + resource "aws_iam_role_policy_attachment" "node_additional" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+      + role       = (known after apply)
+    }
+
+  # module.karpenter.aws_sqs_queue.this[0] will be created
+  + resource "aws_sqs_queue" "this" {
+      + arn                               = (known after apply)
+      + content_based_deduplication       = false
+      + deduplication_scope               = (known after apply)
+      + delay_seconds                     = 0
+      + fifo_queue                        = false
+      + fifo_throughput_limit             = (known after apply)
+      + id                                = (known after apply)
+      + kms_data_key_reuse_period_seconds = 0
+      + max_message_size                  = 262144
+      + message_retention_seconds         = 300
+      + name                              = "Karpenter-eks-cluster"
+      + name_prefix                       = (known after apply)
+      + policy                            = (known after apply)
+      + receive_wait_time_seconds         = 0
+      + redrive_allow_policy              = (known after apply)
+      + redrive_policy                    = (known after apply)
+      + region                            = "eu-west-2"
+      + sqs_managed_sse_enabled           = true
+      + tags                              = {
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+      + tags_all                          = {
+          + "Environment" = "dev"
+          + "Terraform"   = "true"
+        }
+      + url                               = (known after apply)
+      + visibility_timeout_seconds        = 30
+    }
+
+  # module.karpenter.aws_sqs_queue_policy.this[0] will be created
+  + resource "aws_sqs_queue_policy" "this" {
+      + id        = (known after apply)
+      + policy    = (known after apply)
+      + queue_url = (known after apply)
+      + region    = "eu-west-2"
+    }
+
+Plan: 74 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + aws_private_subnet_ids = [
+      + (known after apply),
+      + (known after apply),
+      + (known after apply),
+    ]
+  + aws_public_subnet_ids  = [
+      + (known after apply),
+      + (known after apply),
+      + (known after apply),
+    ]
+  + aws_vpc_id             = (known after apply)
