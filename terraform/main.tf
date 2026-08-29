@@ -1,6 +1,6 @@
 module "eks" {
   source                                            = "./modules/eks"
-  depends_on = [ module.networking, module.iam]
+  depends_on                                        = [module.networking, module.iam]
   aws_sg_eks_worker_node                            = module.security.aws_sg_eks_worker_node.id
   aws_private_subnet_ids                            = module.networking.aws_private_subnet_ids
   aws_public_subnet_ids                             = module.networking.aws_public_subnet_ids
@@ -18,7 +18,7 @@ module "ecr" {
 
 module "helm" {
   source                               = "./modules/helm"
-  depends_on = [ module.eks ]
+  depends_on                           = [module.eks]
   module_karpenter_queue_name          = module.irsa.module_karpenter_queue_name
   karpeneter_module                    = module.irsa.karpeneter_module
   aws_eks_cluster_eks_cluster_endpoint = module.eks.aws_eks_cluster_eks_cluster_endpoint
