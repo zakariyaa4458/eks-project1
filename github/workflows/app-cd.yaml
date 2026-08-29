@@ -1,0 +1,146 @@
+name: app-cd pipeline
+# builds and tags docker images to ecr repos and updates manifests image tags and commits and pushs the manifest change
+
+run-name: app-cd pipeline by ${{ github.actor }}
+
+on:
+  workflow_run:
+    workflows:
+      - infrastructure pipeline
+    types:
+      - completed
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: write
+  
+
+jobs:
+  build-push-docker-images:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    strategy:
+        matrix:
+          service:
+            - api-gateway
+            - dashboard-api
+            - inventory-service
+            - notification-service
+            - order-service
+            - payment-service
+            - scheduler
+            - shipping-service
+            - worker
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+           role-to-assume: arn:aws:iam::499024813019:role/githubs-action-EcrPushRole
+           aws-region: eu-west-2
+
+      - name: login to amazon ecr
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t 499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ github.event.workflow_run.head_sha }} \
+            ./services/${{ matrix.service }}
+
+      - name: push docker image
+        run: |
+          docker push \
+          499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ github.event.workflow_run.head_sha }}
+
+  update-manifests:
+    needs: build-push-docker-images
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: checkout
+      uses: actions/checkout@v4
+      with:
+        ref: main
+
+    - name: Update the image tag in the relevant Kubernetes Deployment manifest. 
+      uses: Charlyzzz/update-k8s-image@v1.7.1
+      with:
+        manifest-path: kubernetes/api-gateway/deployment.yaml
+        new-image-tag: ${{ github.event.workflow_run.head_sha }}
+        container-name: api-gateway
+
+    - name: Update the image tag in the relevant Kubernetes Deployment manifest.
+      uses: Charlyzzz/update-k8s-image@v1.7.1
+      with:
+        manifest-path: kubernetes/dashboard-api/deployment.yaml
+        new-image-tag: ${{ github.event.workflow_run.head_sha }}
+        container-name: dashboard-api
+
+    - name: Update the image tag in the relevant Kubernetes Deployment manifest.
+      uses: Charlyzzz/update-k8s-image@v1.7.1
+      with:
+        manifest-path: kubernetes/inventory-service/deployment.yaml
+        new-image-tag: ${{ github.event.workflow_run.head_sha }}
+        container-name: inventory-service
+
+    - name: Update the image tag in the relevant Kubernetes Deployment manifest.
+      uses: Charlyzzz/update-k8s-image@v1.7.1
+      with:
+        manifest-path: kubernetes/notification-service/deployment.yaml
+        new-image-tag: ${{ github.event.workflow_run.head_sha }}
+        container-name: notification-service
+
+    - name: Update the image tag in the relevant Kubernetes Deployment manifest.
+      uses: Charlyzzz/update-k8s-image@v1.7.1
+      with:
+        manifest-path: kubernetes/order-service/deployment.yaml
+        new-image-tag: ${{ github.event.workflow_run.head_sha }}
+        container-name: order-service
+
+    - name: Update the image tag in the relevant Kubernetes Deployment manifest.
+      uses: Charlyzzz/update-k8s-image@v1.7.1
+      with:
+        manifest-path: kubernetes/payment-service/deployment.yaml
+        new-image-tag: ${{ github.event.workflow_run.head_sha }}
+        container-name: payment-service
+
+
+    - name: Update the image tag in the relevant Kubernetes Deployment manifest.
+      uses: Charlyzzz/update-k8s-image@v1.7.1
+      with:
+        manifest-path: kubernetes/scheduler/deployment.yaml
+        new-image-tag: ${{ github.event.workflow_run.head_sha }}
+        container-name: scheduler 
+
+    - name: Update the image tag in the relevant Kubernetes Deployment manifest.
+      uses: Charlyzzz/update-k8s-image@v1.7.1
+      with:
+        manifest-path: kubernetes/shipping-service/deployment.yaml
+        new-image-tag: ${{ github.event.workflow_run.head_sha }}
+        container-name: shipping-service
+
+    - name: Update the image tag in the relevant Kubernetes Deployment manifest.
+      uses: Charlyzzz/update-k8s-image@v1.7.1
+      with:
+        manifest-path: kubernetes/worker/deployment.yaml
+        new-image-tag: ${{ github.event.workflow_run.head_sha }}
+        container-name: worker
+
+    - name: setting up gitHub then creating git commit and pushing it to gitHub
+      run: |
+          git config --global user.email "zakariya.a4458@gmail.com"
+          git config --global user.name "zakariyaa4458"
+          git add kubernetes/
+          git commit -m "new commits for updated manifests"
+          git push
