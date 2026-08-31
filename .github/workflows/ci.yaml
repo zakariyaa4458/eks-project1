@@ -133,13 +133,15 @@ jobs:
   kubernetes-check:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: kubernetes
-
     steps:
-      - name: Kubernetes-checkov
-        run: checkov -d 
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Kubernetes Checkov
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: kubernetes
+        framework: kubernetes
         
             
 
