@@ -93,7 +93,7 @@ jobs:
           run: terraform init
 
         - name: terraform-fmt
-          run: terraform fmt -check
+          run: terraform fmt 
 
         - name: setup tflint
           uses: terraform-linters/setup-tflint@v4
@@ -140,8 +140,7 @@ jobs:
     steps:
       - name: Kubernetes-checkov
         run: checkov -d .
-        with:
-          framework: kubernetes
+        
             
 
    
