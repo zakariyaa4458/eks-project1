@@ -139,7 +139,7 @@ jobs:
 
     steps:
       - name: Kubernetes-checkov
-        uses: bridgecrewio/checkov-action@master
+        run: checkov -d .
         with:
           framework: kubernetes
             
