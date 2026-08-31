@@ -66,7 +66,7 @@ jobs:
 
     defaults:
       run:
-       working-directory: terraform
+        working-directory: terraform
 
     steps:
         - name: checkout code
@@ -129,6 +129,19 @@ jobs:
           with:
             name: readable-plan1.txt
             path: readable-plan1.txt
+
+  kubernetes-check:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: kubernetes
+
+    steps:
+      - name: Kubernetes-checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          framework: kubernetes
             
 
    

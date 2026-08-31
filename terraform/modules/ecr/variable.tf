@@ -10,3 +10,8 @@ variable "region" {
   default = "eu-west-2"
 
 }
+
+variable "aws_key_ecr_arn" {
+  type = string
+  
+}

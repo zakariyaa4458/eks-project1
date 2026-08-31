@@ -1,17 +1,27 @@
 resource "aws_vpc" "main" {
+  #checkov:skip=CKV2_AWS_11: it is enabled through and refernced through the vpc variable
   region           = var.region
   cidr_block       = "10.0.0.0/16"
   instance_tenancy = "default"
+  
 
   tags = {
     Name = "eks-vpc"
   }
 }
 
+resource "aws_default_security_group" "default" {
+  vpc_id = aws_vpc.main
+
+  
+}
+
 resource "aws_subnet" "private-subnet" {
 
   vpc_id = aws_vpc.main.id
   region = var.region
+
+  map_public_ip_on_launch = "false"
 
 
   for_each = {
@@ -34,7 +44,7 @@ resource "aws_subnet" "private-subnet" {
 resource "aws_subnet" "public-eks-subnet" {
   vpc_id                  = aws_vpc.main.id
   region                  = var.region
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
 
   for_each = {
     "eu-west-2a" = "10.0.1.0/24"
@@ -111,6 +121,7 @@ resource "aws_internet_gateway" "internet-gateway" {
 
 
 resource "aws_eip" "nat-eip" {
+  #checkov:skip=CKV2_AWS_19: This eip is being used
 
   region = var.region
   tags = {

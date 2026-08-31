@@ -1,6 +1,6 @@
 module "cert_manager_irsa_role" {
   version = "5.60.0"
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks?ref=b653d7727a6dc4ad8ba822952bccb7ee812cd4ef"
 
 
   role_name                     = "cert-manager"
@@ -18,7 +18,7 @@ module "cert_manager_irsa_role" {
 
 
 module "karpenter" {
-  source = "terraform-aws-modules/eks/aws//modules/karpenter"
+  source = "terraform-aws-modules/eks/aws//modules/karpenter?ref=76524a21b323679f22484ddd98ce0ae90b707464"
   region = var.region
  
 
@@ -37,7 +37,7 @@ module "karpenter" {
 
 module "external-dns" {
   version = "5.60.0"
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks?ref=b653d7727a6dc4ad8ba822952bccb7ee812cd4ef"
 
 
   role_name                     = "external-dns"
@@ -55,7 +55,7 @@ module "external-dns" {
 
 module "aws-load-balancer-controller" {
   version = "5.0.1"
-  source  = "lablabs/eks-load-balancer-controller/aws"
+  source  = "lablabs/eks-load-balancer-controller/aws?ref=8a59a013f90404a9343fb64179078b2796ce3846"
 
 
 

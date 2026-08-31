@@ -1,4 +1,5 @@
 module "eks" {
+    #checkov:skip=CKV_AWS_1: these are local modules 
   source                                            = "./modules/eks"
   depends_on                                        = [module.networking, module.iam]
   aws_sg_eks_worker_node                            = module.security.aws_sg_eks_worker_node.id
@@ -8,15 +9,20 @@ module "eks" {
   aws_iam_role_policy_attachment_eks_cluster_policy = module.iam.aws_iam_role_policy_attachment_eks_cluster_policy.id
   aws_iam_role_eks_role                             = module.iam.aws_iam_role_eks_role.id
   aws_iam_role_node_group_role                      = module.iam.aws_iam_role_node_group_role.id
+  aws_key_arn                                       = var.aws_key_arn
+  ip_address                                        = var.ip_address
 
 }
 
 module "ecr" {
-  source       = "./modules/ecr"
-  app_ecr_repo = var.app_ecr_repo
+  #checkov:skip=CKV_AWS_1: these are local modules
+  source          = "./modules/ecr"
+  app_ecr_repo    = var.app_ecr_repo
+  aws_key_ecr_arn = var.aws_key_ecr_arn
 }
 
 module "helm" {
+  #checkov:skip=CKV_AWS_1: these are local modules
   source                               = "./modules/helm"
   depends_on                           = [module.eks]
   module_karpenter_queue_name          = module.irsa.module_karpenter_queue_name
@@ -30,12 +36,14 @@ module "helm" {
 
 
 module "iam" {
+  #checkov:skip=CKV_AWS_1: these are local modules
   source = "./modules/iam"
 
 }
 
 
 module "irsa" {
+  #checkov:skip=CKV_AWS_1: these are local modules
   source                                           = "./modules/irsa"
   aws_vpc_id                                       = module.networking.aws_vpc_id
   aws_iam_openid_connect_provider_arn              = module.eks.aws_iam_openid_connect_provider_arn
@@ -48,18 +56,25 @@ module "irsa" {
 }
 
 module "networking" {
+  #checkov:skip=CKV_AWS_1: these are local modules
   source = "./modules/networking"
 
 }
 
 module "security" {
+  #checkov:skip=CKV_AWS_1: these are local modules
   source                = "./modules/security"
   aws_vpc_id            = module.networking.aws_vpc_id
   aws_vpc_id_cidr_block = module.networking.aws_vpc_id_cidr_block
+  aws_iam_role_policy_flow_log_policy = module.iam.aws_iam_role_policy_flow_log_policy.id
+  aws_iam_role_flow_log_role = module.iam.aws_iam_role_flow_log_role.id
+  cloudwatch_key_arn = var.cloudwatch_key_arn
+ 
 
 }
 
 module "sqs" {
+  #checkov:skip=CKV_AWS_1: these are local modules
   source = "./modules/sqs"
 
 }

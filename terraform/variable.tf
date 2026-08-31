@@ -30,3 +30,24 @@ variable "region" {
 # type = string
 
 #}
+
+variable "ip_address" {
+  type    = string
+  default = "81.151.155.181/32"
+
+}
+
+variable "aws_key_arn" {
+  type = string
+
+}
+
+variable "aws_key_ecr_arn" {
+  type = string
+
+}
+
+variable "cloudwatch_key_arn" {
+    type = string
+  
+}

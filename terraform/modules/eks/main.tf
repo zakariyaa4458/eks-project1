@@ -1,8 +1,19 @@
 resource "aws_eks_cluster" "eks-cluster" {
+  #checkov:skip=CKV_AWS_39: using home Ip address 
   region   = var.region
   name     = "eks-cluster"
   role_arn = var.aws_iam_role_eks_role
   version  = "1.35"
+
+  enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+
+  encryption_config {
+    provider {
+   key_arn = var.aws_key_arn
+    }
+
+    resources = ["secrets"]
+  }
 
   access_config {
     authentication_mode = "API_AND_CONFIG_MAP"
@@ -16,8 +27,10 @@ resource "aws_eks_cluster" "eks-cluster" {
   vpc_config {
 
     security_group_ids = [var.aws_sg_eks_control_plane]
+    
+  
 
-    public_access_cidrs = ["81.151.155.181/32"]
+    public_access_cidrs = [var.ip_address]
     subnet_ids = [
 
 
@@ -70,6 +83,11 @@ resource "aws_iam_openid_connect_provider" "default" {
 resource "aws_launch_template" "eks_launch_template" {
   name   = "eks-launch-template"
   region = var.region
+
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens = "required"
+  }
   network_interfaces {
     security_groups = [var.aws_sg_eks_worker_node]
 
