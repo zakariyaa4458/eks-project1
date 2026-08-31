@@ -139,7 +139,7 @@ jobs:
 
     steps:
       - name: Kubernetes-checkov
-        run: checkov -d .
+        run: checkov -d 
         
             
 
