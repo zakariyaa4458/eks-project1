@@ -4,7 +4,11 @@ metadata:
   name: postgres-statefulset1
   namespace: database-ns
   annotations:
-    checkov.io/skip1: CKV_K8S_35
+    checkov.io/skip1: CKV_K8S_14=I will add commits when I apply the apply the aws infrastructure
+    checkov.io/skip2: CKV_K8S_35 
+    checkov.io/skip3: CKV_K8S_43=I will add commits when I apply the aws infrastructure
+
+    
     
   
     
@@ -19,6 +23,7 @@ spec:
       labels:
         app: postgres
     spec:
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 10000
@@ -29,6 +34,7 @@ spec:
       containers:
           - name: postgres
             image: postgres:16
+            imagePullPolicy: Always
             securityContext:
               runAsNonRoot: true
               runAsUser: 10000

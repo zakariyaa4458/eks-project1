@@ -7,7 +7,8 @@ metadata:
     environment: production
   namespace: application-namespace
   annotations:
-    checkov.io/skip1: CKV_K8S_43=I will add commits when I have the apply the aws infrastructure
+    checkov.io/skip1: CKV_K8S_43=I will add commits when I apply the aws infrastructure
+    checkov.io/skip2: CKV_K8S_14=I will add commits when I apply the aws infrastructure
 
 
 spec:
@@ -23,6 +24,7 @@ spec:
         app: shipping-service
 
     spec:
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 10000

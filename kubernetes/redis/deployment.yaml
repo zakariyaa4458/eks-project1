@@ -7,7 +7,8 @@ metadata:
     environment: production
   namespace: database-ns
   annotations:
-    checkov.io/skip1: CKV_K8S_43=I will add commits when I have the apply the aws infrastructure
+    checkov.io/skip1: CKV_K8S_43=I will add commits when I apply the aws infrastructure
+    checkov.io/skip2: CKV_K8S_22=read-only filesystems is not optimal for redis, as it needs to write to disk for persistence
 
 spec:
   replicas: 1
@@ -21,6 +22,7 @@ spec:
         app: redis
 
     spec:
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 10000
@@ -30,6 +32,7 @@ spec:
       containers:
         - name: redis
           image: redis:7-alpine
+          imagePullPolicy: Always
           securityContext:
             runAsUser: 10000
             runAsGroup: 30000
