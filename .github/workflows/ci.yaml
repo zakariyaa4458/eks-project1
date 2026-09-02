@@ -113,6 +113,10 @@ jobs:
           run: terraform validate
 
         - name: terraform-plan
+          env: 
+                TF_VAR_AWS_KEY_ARN: ${{ secrets.AWS_KEY_ARN }}
+                TF_VAR_AWS_KEY_ECR_ARN: ${{ secrets.AWS_SECRET_KEY }}
+                TF_VAR_CLOUDWATCH_KEY_ARN: ${{ secrets.CLOUDWATCH_KEY_ARN }}
           run: | 
                  terraform plan -out=tfplan -input=false
                 
