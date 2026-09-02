@@ -113,7 +113,7 @@ jobs:
           run: terraform validate
 
         - name: terraform-plan
-          run: terraform plan -out=tfplan
+          run: terraform plan -out=tfplan -input false
     
         - name: change it to readable txt
           run: terraform show -no-color tfplan > readable-plan1.txt
