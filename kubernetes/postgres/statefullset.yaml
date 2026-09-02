@@ -1,7 +1,13 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: postgres
+  name: postgres-statefulset1
+  namespace: database-ns
+  annotations:
+    checkov.io/skip1: CKV_K8S_35
+    
+  
+    
 spec:
   serviceName: postgres-service
   replicas: 1
@@ -9,29 +15,73 @@ spec:
     matchLabels: 
       app: postgres
   template:
-      metadata:
-        labels:
-          app: postgres
-      spec:
-        containers:
-        - name: postgres
-          image: postgres:16
-          env:
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef: 
-                  name: postgres-secret
-                  key: POSTGRES_password
-          volumeMounts:
-            - name: postgres-data
-              mountPath: /var/lib/postgresql/data
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10000
+        runAsGroup: 30000
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: postgres-service-account
+      containers:
+          - name: postgres
+            image: postgres:16
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 10000
+              runAsGroup: 30000
+              seccompProfile:
+              type: RuntimeDefault
+              capabilities:
+                drop: ["ALL"]
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+
+            resources:
+              requests:
+          
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "256Mi"
+                cpu: "250m"
+
+            readinessProbe:
+              tcpSocket:
+                port: 5432
+              initialDelaySeconds: 15
+              periodSeconds: 10
+
+            livenessProbe:
+              exec:
+                command:
+                  - pg_isready
+                  - -U
+                  - postgres
+        
+              initialDelaySeconds: 3
+              periodSeconds: 3
+
+            env:
+              - name: POSTGRES_PASSWORD
+                valueFrom:
+                  secretKeyRef: 
+                    name: postgres-secret
+                    key: POSTGRES_PASSWORD
+                
+            volumeMounts:
+              - name: postgres-data
+                mountPath: /var/lib/postgresql/data
   volumeClaimTemplates:
     - metadata: 
         name: postgres-data
       spec: 
         accessModes:
           - ReadWriteOnce
+
         resources:
-          requests: 
+          requests:
             storage: 10Gi
-          

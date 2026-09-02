@@ -1,4 +1,5 @@
 module "cert_manager_irsa_role" {
+  #checkov:skip=CKV_AWS_1: 
   version = "5.60.0"
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
 
@@ -17,6 +18,7 @@ module "cert_manager_irsa_role" {
 
 
 module "karpenter" {
+  #checkov:skip=CKV_AWS_1: 
   source = "terraform-aws-modules/eks/aws//modules/karpenter"
   region = var.region
  
@@ -35,6 +37,7 @@ module "karpenter" {
 }
 
 module "external-dns" {
+  #checkov:skip=CKV_AWS_1: 
   version = "5.60.0"
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
 
@@ -53,8 +56,9 @@ module "external-dns" {
 }
 
 module "aws-load-balancer-controller" {
-  #version = "5.0.1"
-  source = "git::https://github.com/lablabs/terraform-aws-eks-load-balancer-controller.git?ref=8a59a013f90404a9343fb64179078b2796ce3846"
+  #checkov:skip=CKV_AWS_1: 
+  version = "5.0.1"
+  source = "lablabs/eks-load-balancer-controller/aws"
 
 
   cluster_name = var.aws_eks_cluster

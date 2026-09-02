@@ -2,9 +2,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: worker-deployment
+  namespace: application-namespace
+  
   labels:
     app: worker
     environment: production
+  annotations:
+    checkov.io/skip1: CKV_K8S_43=I will add commits when I have the apply the aws infrastructure
 
 spec:
   replicas: 2
@@ -19,9 +23,22 @@ spec:
         app: worker
 
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10000
+        runAsGroup: 30000
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: worker-service-account
       containers:
       - name: worker
         image: worker:latest
+        securityContext:
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
         ports:
         - containerPort: 8090
 

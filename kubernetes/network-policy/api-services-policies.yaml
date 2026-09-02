@@ -1,0 +1,107 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-gateway-to-order-service-network-policy
+  namespace: application-namespace
+spec:
+  podSelector:
+    matchLabels:
+      app: order-service
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+       - podSelector:
+            matchLabels:
+              app: api-gateway
+       
+      ports:
+        - protocol: TCP
+          port: 8081
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-gateway-to-inventory-service-network-policy
+  namespace: application-namespace
+spec:
+  podSelector:
+    matchLabels:
+      app: inventory-service
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+       - podSelector:
+            matchLabels:
+              app: api-gateway
+       
+      ports:
+        - protocol: TCP
+          port: 8082
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-gateway-to-payment-service-network-policy
+  namespace: application-namespace
+spec:
+  podSelector:
+    matchLabels:
+      app: payment-service
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+       - podSelector:
+            matchLabels:
+              app: api-gateway
+       
+      ports:
+        - protocol: TCP
+          port: 8083
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-gateway-to-notification-service-network-policy
+  namespace: application-namespace
+spec:
+  podSelector:
+    matchLabels:
+      app: notification-service
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+       - podSelector:
+            matchLabels:
+              app: api-gateway
+       
+      ports:
+        - protocol: TCP
+          port: 8084
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-gateway-to-shipping-service-network-policy
+  namespace: application-namespace
+spec:
+  podSelector:
+    matchLabels:
+      app: shipping-service
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+       - podSelector:
+            matchLabels:
+              app: api-gateway
+       
+      ports:
+        - protocol: TCP
+          port: 8085

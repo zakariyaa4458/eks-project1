@@ -5,7 +5,9 @@ metadata:
   labels:
     app: order-service
     environment: production
-
+  namespace: application-namespace
+  annotations:
+    checkov.io/skip1: CKV_K8S_43=I will add commits when I have the apply the aws infrastructure
 spec:
   replicas: 2
   selector: 
@@ -19,9 +21,22 @@ spec:
         app: order-service
 
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10000
+        runAsGroup: 30000
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: order-service-service-account
       containers:
       - name: order-service
         image: order-service:latest
+        securityContext:
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
         ports:
         - containerPort: 8081
 

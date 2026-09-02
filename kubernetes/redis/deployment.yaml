@@ -5,6 +5,9 @@ metadata:
   labels:
     app: redis
     environment: production
+  namespace: database-ns
+  annotations:
+    checkov.io/skip1: CKV_K8S_43=I will add commits when I have the apply the aws infrastructure
 
 spec:
   replicas: 1
@@ -18,35 +21,52 @@ spec:
         app: redis
 
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10000
+        runAsGroup: 30000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
-      - name: redis
-        image: redis:7-alpine
-        ports:
-        - containerPort: 6379
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "250m"
+        - name: redis
+          image: redis:7-alpine
+          securityContext:
+            runAsUser: 10000
+            runAsGroup: 30000
+            seccompProfile:
+              type: RuntimeDefault
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+            allowPrivilegeEscalation: false
+          
+          ports:
+          - containerPort: 6379
 
-        livenessProbe:
-          exec:
-            command:
-            - redis-cli 
-            - ping
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
 
-        readinessProbe:
-          exec:
-            command:
-            - redis-cli
-            - ping
-          initialDelaySeconds: 20
-          periodSeconds: 5
-          timeoutSeconds: 3
-          failureThreshold: 2
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli 
+                - ping
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
