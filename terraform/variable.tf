@@ -1,6 +1,7 @@
 variable "app_ecr_repo" {
   type        = set(string)
   description = "1 repo for each 9 service"
+  default     = ["api-gateway", "dashboard-api", "inventory-service", "notification-service", "order-service", "payment-service", "scheduler", "shipping-service", "worker"]
 
 }
 
