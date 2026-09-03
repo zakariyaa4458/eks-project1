@@ -116,10 +116,10 @@ jobs:
         - name: terraform-plan
           
           env: 
-                TF_VAR_AWS_KEY_ARN: ${{ secrets.AWS_KEY_ARN }}
-                TF_VAR_AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-                TF_VAR_CLOUDWATCH_KEY_ARN: ${{ secrets.CLOUDWATCH_KEY_ARN }}
-                TF_VAR_APP_ECR_REPO: ${{ vars.APP_ECR_REPO }}
+                TF_VAR_aws_key_arn: ${{ secrets.AWS_KEY_ARN }}
+                TF_VAR_aws_key_ecr_arn: ${{ secrets.AWS_SECRET_KEY }}
+                TF_VAR_cloudwatch_key_arn: ${{ secrets.CLOUDWATCH_KEY_ARN }}
+                TF_VAR_app_ecr_repo: ${{ vars.APP_ECR_REPO }}
           run: | 
                  terraform plan -out=tfplan -input=false
                 
