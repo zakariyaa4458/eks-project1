@@ -63,7 +63,7 @@ jobs:
 
   terraform-check:
     runs-on: ubuntu-latest
-    environment: eks-production
+    
 
     defaults:
       run:
