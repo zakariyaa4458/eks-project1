@@ -46,7 +46,7 @@ resource "aws_eks_cluster" "eks-cluster" {
 
 resource "aws_eks_node_group" "eks-node-group" {
   launch_template {
-    name    = aws_launch_template.eks_launch_template.id
+    id      = aws_launch_template.eks_launch_template.id
     version = aws_launch_template.eks_launch_template.latest_version
   }
   region          = var.region
