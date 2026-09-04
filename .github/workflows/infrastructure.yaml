@@ -51,7 +51,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
 
         with:
-          role-to-assume: arn:aws:iam::499024813019:role/githubs-action-terraformrole
+          role-to-assume: arn:aws:iam::499024813019:role/terraform_aws
           aws-region: eu-west-2
   
 
