@@ -33,8 +33,8 @@ variable "region" {
 #}
 
 #variable "ip_address" {
- # type    = string
-  #default = "81.151.155.181/32"
+# type    = string
+#default = "81.151.155.181/32"
 
 #}
 
