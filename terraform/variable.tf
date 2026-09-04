@@ -68,7 +68,7 @@ variable "flow_log_role_arn" {
 
 }
 
-variable "aws_iam_role_node_group_role" {
+variable "aws_iam_role_node_group_role_arn" {
   type = string
 
 }
