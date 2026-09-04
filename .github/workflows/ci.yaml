@@ -132,13 +132,13 @@ jobs:
           uses: actions/upload-artifact@v4
           with:
             name: tfplan
-            path: tfplan
+            path: ./terraform/tfplan
 
         - name: Upload Terraform Plan
           uses: actions/upload-artifact@v4
           with:
             name: readable-plan1.txt
-            path: readable-plan1.txt
+            path: ./terraform/readable-plan1.txt
 
   kubernetes-check:
     runs-on: ubuntu-latest

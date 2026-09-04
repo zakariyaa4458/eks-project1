@@ -35,7 +35,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: tfplan
-          path: terraform
+          path: downloaded-tfplan
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: downloading tf plan
+        uses: actions/download-artifact@v4
+        with:
+          name: readable-plan1.txt
+          path: downloaded-readable-plan1.txt
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
