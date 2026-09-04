@@ -57,3 +57,8 @@ variable "aws_account_id" {
   type = string
 
 }
+
+variable "eks_role_arn" {
+  type = string
+
+}

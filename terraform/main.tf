@@ -12,6 +12,7 @@ module "eks" {
   aws_key_arn                                       = var.aws_key_arn
   ip_address                                        = var.ip_address
   aws_account_id                                    = var.aws_account_id
+  eks_role_arn                                      = var.eks_role_arn
 
 }
 

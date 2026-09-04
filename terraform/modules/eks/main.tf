@@ -3,7 +3,7 @@ resource "aws_eks_cluster" "eks-cluster" {
   region   = var.region
   name     = "eks-cluster"
   #role_arn = var.aws_iam_role_eks_role
-  role_arn = "arn:aws:iam::${var.aws_account_id}:role/eks-role"
+  role_arn = var.eks_role_arn
   version  = "1.35"
 
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
