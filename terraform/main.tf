@@ -39,10 +39,10 @@ module "helm" {
 
 module "iam" {
   #checkov:skip=CKV_AWS_1: these are local modules
-  source = "./modules/iam"
-  aws_account_id = var.aws_account_id
+  source                                  = "./modules/iam"
+  aws_account_id                          = var.aws_account_id
   aws_cloudwatch_log_group_flow_log_group = module.security.aws_cloudwatch_log_group_flow_log_group.arn
-  
+
 }
 
 
@@ -74,6 +74,7 @@ module "security" {
   aws_iam_role_flow_log_role          = module.iam.aws_iam_role_flow_log_role.id
   cloudwatch_key_arn                  = var.cloudwatch_key_arn
   aws_account_id                      = var.aws_account_id
+  flow_log_role_arn                   = var.flow_log_role_arn
 
 
 }

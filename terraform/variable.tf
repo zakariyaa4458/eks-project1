@@ -62,3 +62,8 @@ variable "eks_role_arn" {
   type = string
 
 }
+
+variable "flow_log_role_arn" {
+  type = string
+
+}
