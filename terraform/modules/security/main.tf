@@ -83,15 +83,17 @@ resource "aws_vpc_security_group_ingress_rule" "ingress_worker_to_worker_node_ru
 }
 
 resource "aws_flow_log" "flow_log" {
-  iam_role_arn    = var.aws_iam_role_flow_log_role
-  log_destination = aws_cloudwatch_log_group.flow_log_group.id
+  iam_role_arn    = "arn:aws:iam::${var.aws_account_id}:role/flow-log-role"
+  log_destination = aws_cloudwatch_log_group.flow_log_group.arn
   traffic_type    = "ALL"
   vpc_id          = var.aws_vpc_id
 }
 
 resource "aws_cloudwatch_log_group" "flow_log_group" {
   name = "flow-log-cloudwatch-group"
+  #arn = "arn:aws:logs:${var.region}:${var.aws_account_id}:log-group:flow-log-cloudwatch-group"
 
+  
   
   kms_key_id = var.cloudwatch_key_arn
   retention_in_days = "365"

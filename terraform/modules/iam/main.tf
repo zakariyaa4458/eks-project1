@@ -73,6 +73,7 @@ resource "aws_iam_role_policy_attachment" "AmazonEKS_CNI_Policy" {
 
 resource "aws_iam_role" "flow_log_role" {
   name = "flow-log-role"
+  #arn = "arn:aws:iam::${var.aws_account_id}:role/flow-log-role"
 
 
   # Terraform's "jsonencode" function converts a
