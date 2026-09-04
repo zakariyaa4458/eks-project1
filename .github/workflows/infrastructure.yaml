@@ -64,6 +64,7 @@ jobs:
         run: terraform init
 
       - name: terraform apply
-        run: terraform apply ./downloaded-tfplan/tfplan -auto-approve
+        run: |
+               terraform apply ./downloaded-tfplan/tfplan -auto-approve
 
 
