@@ -53,6 +53,7 @@ resource "aws_eks_node_group" "eks-node-group" {
   cluster_name    = aws_eks_cluster.eks-cluster.name
   node_group_name = "eks-node-group"
   node_role_arn   = var.aws_iam_role_node_group_role
+  #node_role_arn   = var.aws_iam_role_node_group_role 
   subnet_ids = [
     var.aws_private_subnet_ids[0],
     var.aws_private_subnet_ids[1],

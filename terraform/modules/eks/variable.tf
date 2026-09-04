@@ -60,3 +60,8 @@ variable "eks_role_arn" {
     type = string
 
 }
+
+variable "aws_iam_role_node_group_role" {
+    type = string
+  
+}
