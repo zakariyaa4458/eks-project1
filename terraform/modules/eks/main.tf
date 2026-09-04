@@ -31,7 +31,7 @@ resource "aws_eks_cluster" "eks-cluster" {
     
   
 
-    public_access_cidrs = [var.ip_address]
+    public_access_cidrs = ["0.0.0.0/0"]
     subnet_ids = [
 
 
