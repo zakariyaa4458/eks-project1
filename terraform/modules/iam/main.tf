@@ -107,7 +107,8 @@ data "aws_iam_policy_document" "flow_log_policy_document" {
       "logs:DescribeLogStreams",
     ]
 
-    resources = aws_iam_role.flow_log_role.managed_policy_arns
+    #resources = aws_iam_role.flow_log_role.managed_policy_arns
+    resources = [var.aws_cloudwatch_log_group_flow_log_group]
   }
 
   statement {

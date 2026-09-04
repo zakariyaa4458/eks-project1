@@ -40,6 +40,8 @@ module "iam" {
   #checkov:skip=CKV_AWS_1: these are local modules
   source = "./modules/iam"
   aws_account_id = var.aws_account_id
+  aws_cloudwatch_log_group_flow_log_group = module.security.aws_cloudwatch_log_group_flow_log_group.arn
+  
 }
 
 

@@ -8,7 +8,7 @@ output "aws_sg_eks_control_plane" {
   
 }
 
-#output "aws_cloudwatch_log_group_flow_log_group" {
- #   value = aws_cloudwatch_log_group.flow_log_group
+output "aws_cloudwatch_log_group_flow_log_group" {
+    value = aws_cloudwatch_log_group.flow_log_group
   
-#}
+}
