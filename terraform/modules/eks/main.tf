@@ -2,6 +2,7 @@ resource "aws_eks_cluster" "eks-cluster" {
   #checkov:skip=CKV_AWS_39: using home Ip address 
   region   = var.region
   name     = "eks-cluster"
+  #role_arn = var.aws_iam_role_eks_role
   role_arn = "arn:aws:iam::${var.aws_account_id}:role/eks-role"
   version  = "1.35"
 
