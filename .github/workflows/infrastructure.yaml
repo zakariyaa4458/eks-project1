@@ -63,6 +63,13 @@ jobs:
       - name: terraform-init
         run: terraform init
 
+      - name: aws cli check
+        run: |
+              aws --version
+              aws sts get-caller-identity
+              aws eks get-token --cluster-name eks-cluster
+
+
       - name: terraform apply
         run: |
                terraform apply ../downloaded-tfplan/tfplan 
