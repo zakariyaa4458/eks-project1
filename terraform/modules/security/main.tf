@@ -82,6 +82,16 @@ resource "aws_vpc_security_group_ingress_rule" "ingress_worker_to_worker_node_ru
   description = "allows communication between worker nodes"
 }
 
+resource "aws_vpc_security_group_ingress_rule" "ingress_control_plane_to_eks_worker_node_rule" {
+  region            = var.region
+  referenced_security_group_id = aws_security_group.Eks-control-plane-sg.id
+  security_group_id = aws_security_group.Eks-worker-node-sg.id
+  from_port = 9443
+  ip_protocol = "tcp"
+  to_port = 9443
+  description = "allows communication between worker nodes and the control plane"
+}
+
 resource "aws_flow_log" "flow_log" {
   iam_role_arn    = var.flow_log_role_arn
   log_destination = aws_cloudwatch_log_group.flow_log_group.arn
