@@ -36,9 +36,9 @@ kind: EC2NodeClass
 metadata:
   name: default
 spec:
-  role: module.karpenter.node_iam_role_name
+  role: KarpenterNodeRole-eks-cluster
   kubelet:
-    podsPerCore: 2
+    podsPerCore: 3
     maxPods: 20
     systemReserved:
       cpu: 100m
