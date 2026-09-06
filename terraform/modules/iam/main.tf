@@ -152,22 +152,22 @@ resource "aws_iam_role" "karpenter_node_role" {
 
 }
 
-resource "aws_iam_role_policy_attachment" "AmazonEKSWorkerNodePolicy" {
+resource "aws_iam_role_policy_attachment" "AmazonEKSWorkerNodePolicyKarpenter" {
   role       = aws_iam_role.karpenter_node_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
 }
 
-resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryPullOnly" {
+resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryPullOnlyKarpenter" {
   role       = aws_iam_role.karpenter_node_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
 }
 
-resource "aws_iam_role_policy_attachment" "AmazonEKS_CNI_Policy" {
+resource "aws_iam_role_policy_attachment" "AmazonEKS_CNI_PolicyKarpenter" {
   role       = aws_iam_role.karpenter_node_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 
-resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore" {
+resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCoreKarpenter" {
   role       = aws_iam_role.karpenter_node_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
