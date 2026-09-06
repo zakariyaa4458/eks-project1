@@ -1,7 +1,6 @@
-ingressroute:
+ingressRoute:
   dashboard:
     enabled: true
-
 
 env:
   - name: USER

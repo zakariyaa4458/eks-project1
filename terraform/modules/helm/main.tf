@@ -29,10 +29,10 @@ resource "helm_release" "traefik" {
 
 
   values = [
-    <<-EOT
-      installCRDs: true
-    EOT
-    ,
+   # <<-EOT
+    #  installCRDs: true
+    #EOT
+    #,
     "${file("helm-values/traefik.yaml")}"
   ]
 
