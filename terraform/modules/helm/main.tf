@@ -7,7 +7,7 @@ resource "helm_release" "cert_manager" {
   create_namespace = true
 
   values = [
-
+    
     "${file("helm-values/cert-manager.yaml")}"
 
   ]
