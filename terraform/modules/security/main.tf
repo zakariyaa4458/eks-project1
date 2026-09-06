@@ -65,6 +65,17 @@ resource "aws_vpc_security_group_ingress_rule" "ingress_worker_node_cluster_rule
   description                  = "for communication from the control plane"
 }
 
+resource "aws_vpc_security_group_ingress_rule" "ingress_worker_node_cluster_rule_2" {
+
+  region                       = var.region
+  security_group_id            = aws_security_group.Eks-worker-node-sg.id
+  referenced_security_group_id = aws_security_group.Eks-control-plane-sg.id
+  from_port                    = 9402
+  ip_protocol                  = "tcp"
+  to_port                      = 9402
+  description                  = "for communication from the control plane"
+}
+
 
 resource "aws_vpc_security_group_egress_rule" "egress_worker_node_rule" {
   region            = var.region
