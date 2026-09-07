@@ -1,4 +1,4 @@
-name: infrastrucuture pipeline 
+name: infrastructure pipeline 
 
 run-name: infrastructure Pipeline triggered by ${{ github.actor }}
 
