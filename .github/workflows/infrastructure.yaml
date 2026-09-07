@@ -73,6 +73,6 @@ jobs:
       - name: terraform apply
         run: |
                terraform apply ../downloaded-tfplan/tfplan 
-               -auto-approve
+               
 
 
