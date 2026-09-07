@@ -9,7 +9,7 @@ serviceAccount:
 
 
 cainjector:
-  enabled: false
+  enabled: true
     
 
     
