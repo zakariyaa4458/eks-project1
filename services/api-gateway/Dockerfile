@@ -6,6 +6,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN apk add --no-cache git
 USER appuser
+RUN chown appuser /app
 RUN go mod download
 COPY . .
 EXPOSE 8080
