@@ -1,10 +1,11 @@
 #Initial stage
 FROM golang:1.22-alpine AS builder
 RUN adduser --disabled-password appuser 
-USER appuser
+#USER appuser
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN apk add --no-cache git
+USER appuser
 RUN go mod download
 COPY . .
 RUN go build -o main .
