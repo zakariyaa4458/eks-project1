@@ -59,7 +59,7 @@ spec:
     - from:
        - namespaceSelector:
             matchLabels:
-              name: traefik-ns
+              name: traefik
        
       ports:
         - protocol: TCP

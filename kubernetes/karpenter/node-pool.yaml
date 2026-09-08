@@ -23,7 +23,7 @@ spec:
       expireAfter: 72h
 
   limits:
-    cpu: "250"
+    cpu: "300"
     memory: 250Gi
 
   disruption:
@@ -38,8 +38,8 @@ metadata:
 spec:
   role: KarpenterNodeRole-eks-cluster
   kubelet:
-    podsPerCore: 3
-    maxPods: 20
+    # podsPerCore: 8
+    maxPods: 28
     systemReserved:
       cpu: 100m
       memory: 100Mi

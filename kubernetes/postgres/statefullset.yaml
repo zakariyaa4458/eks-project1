@@ -7,11 +7,7 @@ metadata:
     checkov.io/skip1: CKV_K8S_14=I will add commits when I apply the apply the aws infrastructure
     checkov.io/skip2: CKV_K8S_35 
     checkov.io/skip3: CKV_K8S_43=I will add commits when I apply the aws infrastructure
-
-    
-    
   
-    
 spec:
   serviceName: postgres-service
   replicas: 1
@@ -40,7 +36,7 @@ spec:
               runAsUser: 10000
               runAsGroup: 30000
               seccompProfile:
-              type: RuntimeDefault
+                type: RuntimeDefault
               capabilities:
                 drop: ["ALL"]
               allowPrivilegeEscalation: false

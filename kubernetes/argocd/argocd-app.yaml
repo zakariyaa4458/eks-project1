@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL:
+    repoURL: https://github.com/zakariyaa4458/eks-project1
     targetRevision: main
     path: kubernetes
   destination:
