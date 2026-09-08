@@ -126,35 +126,35 @@ jobs:
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/dashboard-api/deployment.yaml
-        new-image-tag: ${{ github.event.workflow_run.head_sha }}
+        new-image-tag: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         container-name: dashboard-api
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/inventory-service/deployment.yaml
-        new-image-tag: ${{ github.event.workflow_run.head_sha }}
+        new-image-tag: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         container-name: inventory-service
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/notification-service/deployment.yaml
-        new-image-tag: ${{ github.event.workflow_run.head_sha }}
+        new-image-tag: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         container-name: notification-service
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/order-service/deployment.yaml
-        new-image-tag: ${{ github.event.workflow_run.head_sha }}
+        new-image-tag: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         container-name: order-service
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/payment-service/deployment.yaml
-        new-image-tag: ${{ github.event.workflow_run.head_sha }}
+        new-image-tag: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         container-name: payment-service
 
 
@@ -162,21 +162,21 @@ jobs:
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/scheduler/deployment.yaml
-        new-image-tag: ${{ github.event.workflow_run.head_sha }}
+        new-image-tag: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         container-name: scheduler 
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/shipping-service/deployment.yaml
-        new-image-tag: ${{ github.event.workflow_run.head_sha }}
+        new-image-tag: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         container-name: shipping-service
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/worker/deployment.yaml
-        new-image-tag: ${{ github.event.workflow_run.head_sha }}
+        new-image-tag: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         container-name: worker
 
     - name: setting up gitHub then creating git commit and pushing it to gitHub
