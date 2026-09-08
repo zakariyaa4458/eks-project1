@@ -11,8 +11,10 @@ on:
       - completed
     branches:
       - main
-
+  
   workflow_dispatch:
+
+  
 
 permissions:
   id-token: write
@@ -22,7 +24,8 @@ permissions:
 jobs:
   build-push-docker-images:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
 
     strategy:
         matrix:
@@ -38,6 +41,17 @@ jobs:
             - worker
 
     steps:
+
+      - name: Determine commit SHA
+        run: |
+              if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+              SHA="${{ github.sha }}"
+              else
+              SHA="${{ github.event.workflow_run.head_sha }}"
+              fi
+
+              echo "Using commit: $SHA"
+              
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -54,15 +68,36 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Docker image
+
         run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          
+          docker build \
+            -t 499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ github.sha }} \
+            ./services/${{ matrix.service }}
+
+          else
           docker build \
             -t 499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ github.event.workflow_run.head_sha }} \
             ./services/${{ matrix.service }}
+             
+          fi
+        
 
       - name: push docker image
         run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          
           docker push \
-          499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ github.event.workflow_run.head_sha }}
+             499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ github.sha }} \
+            
+
+          else
+          docker push \
+            499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ github.event.workflow_run.head_sha }} \
+            
+             
+          fi
 
   update-manifests:
     needs: build-push-docker-images

@@ -5,6 +5,7 @@ RUN adduser --disabled-password appuser
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN apk add --no-cache git
+RUN chown appuser /app
 USER appuser
 RUN go mod download
 COPY . .
