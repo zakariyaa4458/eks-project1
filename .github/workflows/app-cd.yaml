@@ -119,7 +119,7 @@ jobs:
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/api-gateway/deployment.yaml
-        new-image-tag:  ${{ github.event_name == "workflow_dispatch" && github.sha || github.event.workflow_run.head_sha }}
+        new-image-tag:  ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         container-name: api-gateway
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
