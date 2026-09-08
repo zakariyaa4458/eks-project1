@@ -68,7 +68,7 @@ jobs:
       - name: Build Docker image
 
         run: |
-          if [ "${{ github.event_name }" = "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
           
           docker build \
             -t 499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ github.sha }} \
@@ -84,7 +84,7 @@ jobs:
 
       - name: push docker image
         run: |
-          if [ "${{ github.event_name }" = "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
           
           docker push \
              499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ github.sha }} \
