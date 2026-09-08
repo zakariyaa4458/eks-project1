@@ -14,6 +14,8 @@ on:
   
   workflow_dispatch:
 
+env:
+  IMAGE_TAG: ${{ github.sha }}-${{ github.run_number }}
   
 
 permissions:
@@ -73,31 +75,19 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
           
           docker build \
-            -t 499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ github.sha }} \
+            -t 499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ env.IMAGE_TAG }} \
             ./services/${{ matrix.service }}
 
-          else
-          docker build \
-            -t 499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ github.event.workflow_run.head_sha }} \
-            ./services/${{ matrix.service }}
-             
-          fi
+          
         
 
       - name: push docker image
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          
-          docker push \
-             499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ github.sha }} \
+             docker push \
+             499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ env.IMAGE_TAG }} \
             
 
-          else
-          docker push \
-            499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ github.event.workflow_run.head_sha }} \
-            
-             
-          fi
+          
 
   update-manifests:
     needs: build-push-docker-images
@@ -119,42 +109,42 @@ jobs:
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/api-gateway/deployment.yaml
-        new-image-tag:  ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+        new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: api-gateway
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/dashboard-api/deployment.yaml
-        new-image-tag: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+        new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: dashboard-api
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/inventory-service/deployment.yaml
-        new-image-tag: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+        new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: inventory-service
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/notification-service/deployment.yaml
-        new-image-tag: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+        new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: notification-service
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/order-service/deployment.yaml
-        new-image-tag: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+        new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: order-service
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/payment-service/deployment.yaml
-        new-image-tag: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+        new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: payment-service
 
 
@@ -162,21 +152,21 @@ jobs:
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/scheduler/deployment.yaml
-        new-image-tag: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+        new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: scheduler 
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/shipping-service/deployment.yaml
-        new-image-tag: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+        new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: shipping-service
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
         manifest-path: kubernetes/worker/deployment.yaml
-        new-image-tag: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+        new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: worker
 
     - name: setting up gitHub then creating git commit and pushing it to gitHub
