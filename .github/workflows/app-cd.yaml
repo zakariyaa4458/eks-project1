@@ -72,19 +72,17 @@ jobs:
       - name: Build Docker image
 
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          
-          docker build \
-            -t 499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ env.IMAGE_TAG }} \
-            ./services/${{ matrix.service }}
+              docker build \
+               -t 499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ env.IMAGE_TAG }} \
+               ./services/${{ matrix.service }}
 
           
         
 
       - name: push docker image
         run: |
-             docker push \
-             499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ env.IMAGE_TAG }} \
+              docker push \
+              499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ env.IMAGE_TAG }} \
             
 
           
