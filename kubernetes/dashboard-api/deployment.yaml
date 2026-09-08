@@ -9,19 +9,15 @@ metadata:
   annotations:
     checkov.io/skip1: CKV_K8S_43=I will add commits when I apply the aws infrastructure
     checkov.io/skip2: CKV_K8S_14=I will add commits when I apply the aws infrastructure
-
 spec:
   replicas: 2
-  selector: 
+  selector:
     matchLabels:
-      app: dashboard-api 
-
-
+      app: dashboard-api
   template:
     metadata:
       labels:
         app: dashboard-api
-
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -32,38 +28,36 @@ spec:
           type: RuntimeDefault
       serviceAccountName: dashboard-api-service-account
       containers:
-      - name: dashboard-api
-        image: dashboard:latest
-        securityContext:
+        - name: dashboard-api
+          image: dashboard:4b962de47328be19a49b48973f89a36811fad975
+          securityContext:
             runAsNonRoot: true
             runAsUser: 10000
             runAsGroup: 30000
             seccompProfile:
               type: RuntimeDefault
             capabilities:
-              drop: ["ALL"]
+              drop:
+                - ALL
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-        ports:
-        - containerPort: 8086
-
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "250m"
-
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8086
-          initialDelaySeconds: 3
-          periodSeconds: 3
-
-        readinessProbe:
-          tcpSocket:
-            port: 8086
-          initialDelaySeconds: 15
-          periodSeconds: 10
+          ports:
+            - containerPort: 8086
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 100m
+            limits:
+              memory: 256Mi
+              cpu: 250m
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8086
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          readinessProbe:
+            tcpSocket:
+              port: 8086
+            initialDelaySeconds: 15
+            periodSeconds: 10

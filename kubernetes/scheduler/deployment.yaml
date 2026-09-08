@@ -11,17 +11,13 @@ metadata:
     checkov.io/skip2: CKV_K8S_14=I will add commits when I apply the aws infrastructure
 spec:
   replicas: 2
-  selector: 
-    matchLabels: 
+  selector:
+    matchLabels:
       app: scheduler
-    
-
-
   template:
     metadata:
       labels:
         app: scheduler
-
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -31,35 +27,32 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
-      - name: scheduler
-        image: scheduler:latest
-        securityContext:
+        - name: scheduler
+          image: scheduler:4b962de47328be19a49b48973f89a36811fad975
+          securityContext:
             runAsNonRoot: true
             capabilities:
-              drop: ["ALL"]
+              drop:
+                - ALL
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-        ports:
-        - containerPort: 8091
-
-        resources:
-          requests:
-            memory: "115Mi"
-            cpu: "100m"
-          limits:
-            memory: "200Mi"
-            cpu: "250m"
-
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8091
-        
-          initialDelaySeconds: 3
-          periodSeconds: 3
-
-        readinessProbe:
-          tcpSocket:
-            port: 8091
-          initialDelaySeconds: 15
-          periodSeconds: 10
+          ports:
+            - containerPort: 8091
+          resources:
+            requests:
+              memory: 115Mi
+              cpu: 100m
+            limits:
+              memory: 200Mi
+              cpu: 250m
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8091
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          readinessProbe:
+            tcpSocket:
+              port: 8091
+            initialDelaySeconds: 15
+            periodSeconds: 10

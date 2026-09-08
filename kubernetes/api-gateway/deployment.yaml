@@ -7,21 +7,17 @@ metadata:
     environment: production
   namespace: application-namespace
   annotations:
-    checkov.io/skip1: CKV_K8S_43=I will add commits when I apply the aws infrastructure 
+    checkov.io/skip1: CKV_K8S_43=I will add commits when I apply the aws infrastructure
     checkov.io/skip2: CKV_K8S_14= I will add commits when I apply the aws infrastructure
-  
-
 spec:
   replicas: 2
   selector:
     matchLabels:
       app: api-gateway
-
   template:
     metadata:
       labels:
         app: api-gateway
-
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -33,20 +29,19 @@ spec:
       serviceAccountName: api-gateway-service-account
       containers:
         - name: api-gateway
-          image: 'api-gateway:latest'
+          image: api-gateway:4b962de47328be19a49b48973f89a36811fad975
           securityContext:
             runAsNonRoot: true
             capabilities:
-              drop: ["ALL"]
+              drop:
+                - ALL
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
           ports:
             - containerPort: 8080
-
           envFrom:
             - configMapRef:
                 name: redis-config
-
           resources:
             requests:
               memory: 128Mi
@@ -54,21 +49,14 @@ spec:
             limits:
               memory: 256Mi
               cpu: 250m
-
           livenessProbe:
             httpGet:
               path: /healthz
               port: 8080
             initialDelaySeconds: 3
             periodSeconds: 3
-
           readinessProbe:
             tcpSocket:
               port: 8080
             initialDelaySeconds: 15
             periodSeconds: 10
-
-
-
-
-
