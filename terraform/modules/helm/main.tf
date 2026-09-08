@@ -112,6 +112,14 @@ resource "helm_release" "karpenter" {
   ]
 }
 
+resource "helm_release" "secrets-store-csi-driver" {
+  name = "secrets-store-csi-driver"
+  namespace = "kube-system"
+  repository = "https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts"
+  chart = "secrets-store-csi-driver"
+  version = "1.6.0"
+  create_namespace = true
+}
 
 
 
