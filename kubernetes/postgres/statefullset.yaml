@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: postgres-statefulset1
+  name: postgres-statefulset2
   namespace: database-ns
   annotations:
     checkov.io/skip1: CKV_K8S_14=I will add commits when I apply the apply the aws infrastructure
@@ -27,6 +27,7 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       serviceAccountName: postgres-service-account
+      priorityClassName: high-priority
       containers:
           - name: postgres
             image: postgres:16
@@ -81,6 +82,7 @@ spec:
     - metadata: 
         name: postgres-data
       spec: 
+        storageClassName: ebs-sc
         accessModes:
           - ReadWriteOnce
 

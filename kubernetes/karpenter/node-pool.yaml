@@ -39,7 +39,7 @@ spec:
   role: KarpenterNodeRole-eks-cluster
   kubelet:
     # podsPerCore: 8
-    maxPods: 28
+   # maxPods: 28
     systemReserved:
       cpu: 100m
       memory: 100Mi
