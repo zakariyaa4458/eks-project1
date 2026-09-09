@@ -29,3 +29,9 @@ variable "aws_eks_cluster_eks_cluster_name" {
     type = string
   
 }
+
+
+variable "eks_oidc_issuer_url" {
+    type = string
+  
+}

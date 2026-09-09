@@ -129,6 +129,20 @@ resource "helm_release" "aws-ebs-csi-drive" {
   version = "2.65.1"
   create_namespace = true
 
+  values = [
+
+      "${file("helm-values/ebs-csi.yaml")}"
+  ]
+
+   set = [ 
+    
+    {
+    name  = "controller.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    value = var.ebs_csi_controller_role_arn
+  }
+  
+  ]
+
 }
 
 
