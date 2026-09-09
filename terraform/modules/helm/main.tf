@@ -122,7 +122,7 @@ resource "helm_release" "secrets-store-csi-driver" {
 }
 
 resource "helm_release" "aws-ebs-csi-drive" {
-  name = aws-ebs-csi-driver
+  name = "aws-ebs-csi-driver"
   namespace = "kube-system"
   repository = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver"
   chart = "aws-ebs-csi-driver"
