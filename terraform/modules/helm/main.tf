@@ -121,7 +121,15 @@ resource "helm_release" "secrets-store-csi-driver" {
   create_namespace = true
 }
 
+resource "helm_release" "aws-ebs-csi-drive" {
+  name = aws-ebs-csi-driver
+  namespace = "kube-system"
+  repository = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver"
+  chart = "aws-ebs-csi-driver"
+  version = "2.65.1"
+  create_namespace = true
 
+}
 
 
 
