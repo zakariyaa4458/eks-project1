@@ -98,7 +98,7 @@ jobs:
                 terraform workspace show
                 terraform state pull | grep -E '"lineage"|"serial"'
                 terraform state list | grep traefik || true
-                
+
         - name: terraform-fmt
           run: terraform fmt 
 
@@ -118,6 +118,12 @@ jobs:
 
         - name: terraform-validate
           run: terraform validate
+
+        - name: Check live Traefik state
+          run: |
+                aws eks update-kubeconfig --region eu-west-2 --name eks-cluster
+                kubectl get svc -n traefik || true
+                helm status traefik -n traefik || true
 
         - name: terraform-plan
           
