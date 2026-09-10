@@ -34,7 +34,7 @@ spec:
       serviceAccountName: shipping-service-service-account
       containers:
       - name: shipping-service
-        image: shipping-service:latest
+        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/shipping-service:d3871de576a145717a665667415a7488143a2ec0-33
         securityContext:
             runAsNonRoot: true
             capabilities:
@@ -43,6 +43,9 @@ spec:
             readOnlyRootFilesystem: true
         ports:
         - containerPort: 8085
+        envFrom:
+          - secretRef:
+              name: application-secret
 
         resources:
           requests:

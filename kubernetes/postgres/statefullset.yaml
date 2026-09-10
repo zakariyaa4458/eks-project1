@@ -7,6 +7,8 @@ metadata:
     checkov.io/skip1: CKV_K8S_14=I will add commits when I apply the apply the aws infrastructure
     checkov.io/skip2: CKV_K8S_35 
     checkov.io/skip3: CKV_K8S_43=I will add commits when I apply the aws infrastructure
+    checkov.io/skip4: CKV_K8S_40= running as a high uid creates permission issues for postgres
+    checkov.io/skip5: CKV_K8S_23= running as non-root causes postgres permission issues
   
 spec:
   serviceName: postgres-service
@@ -21,9 +23,10 @@ spec:
     spec:
       automountServiceAccountToken: false
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 10000
-        runAsGroup: 30000
+       # runAsNonRoot: true
+        #runAsUser: 10000
+        #runAsGroup: 30000
+        fsGroup: 30000
         seccompProfile:
           type: RuntimeDefault
       serviceAccountName: postgres-service-account
@@ -33,13 +36,17 @@ spec:
             image: postgres:16
             imagePullPolicy: Always
             securityContext:
-              runAsNonRoot: true
-              runAsUser: 10000
-              runAsGroup: 30000
+             # runAsNonRoot: true
+             # runAsUser: 10000
+             # runAsGroup: 30000
               seccompProfile:
                 type: RuntimeDefault
               capabilities:
-                drop: ["ALL"]
+               # drop: 
+                #  - ALL
+                add:
+                  - CHOWN
+
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
 
@@ -78,6 +85,22 @@ spec:
             volumeMounts:
               - name: postgres-data
                 mountPath: /var/lib/postgresql/data
+
+              - name: tmp
+                mountPath: /tmp
+
+              - name: postgres-run
+                mountPath: /var/run/postgresql
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 128Mi
+
+        - name: postgres-run
+          emptyDir:
+            sizeLimit: 128Mi
+
+     
   volumeClaimTemplates:
     - metadata: 
         name: postgres-data
@@ -89,3 +112,5 @@ spec:
         resources:
           requests:
             storage: 10Gi
+
+          

@@ -33,7 +33,7 @@ spec:
       serviceAccountName: dashboard-api-service-account
       containers:
       - name: dashboard-api
-        image: dashboard:latest
+        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/dashboard-api:d3871de576a145717a665667415a7488143a2ec0-33
         securityContext:
             runAsNonRoot: true
             runAsUser: 10000
@@ -46,6 +46,9 @@ spec:
             readOnlyRootFilesystem: true
         ports:
         - containerPort: 8086
+        envFrom:
+          - secretRef:
+              name: application-secret
 
         resources:
           requests:
@@ -59,11 +62,11 @@ spec:
           httpGet:
             path: /healthz
             port: 8086
-          initialDelaySeconds: 3
-          periodSeconds: 3
+          initialDelaySeconds: 130
+          periodSeconds: 5
 
         readinessProbe:
           tcpSocket:
             port: 8086
-          initialDelaySeconds: 15
-          periodSeconds: 10
+          initialDelaySeconds: 20
+          periodSeconds: 15

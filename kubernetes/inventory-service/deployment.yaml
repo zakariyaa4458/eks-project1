@@ -33,7 +33,7 @@ spec:
       serviceAccountName: inventory-service-service-account
       containers:
       - name: inventory-service
-        image: inventory-service:latest
+        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/inventory-service:d3871de576a145717a665667415a7488143a2ec0-33
         securityContext:
             runAsNonRoot: true
             runAsUser: 10000
@@ -46,6 +46,9 @@ spec:
             readOnlyRootFilesystem: true
         ports:
         - containerPort: 8082
+        envFrom:
+          - secretRef:
+              name: application-secret
 
         resources:
           requests:

@@ -34,7 +34,7 @@ spec:
       serviceAccountName: worker-service-account
       containers:
       - name: worker
-        image: worker:latest
+        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/worker:d3871de576a145717a665667415a7488143a2ec0-33
         securityContext:
             runAsNonRoot: true
             capabilities:
@@ -43,6 +43,12 @@ spec:
             readOnlyRootFilesystem: true
         ports:
         - containerPort: 8090
+
+        envFrom:
+          - secretRef:
+              name: application-secret
+          - secretRef:
+              name: application-secret-sqs
 
         resources:
           requests:
@@ -62,5 +68,5 @@ spec:
         readinessProbe: 
           tcpSocket:
             port: 8090
-          initialDelaySeconds: 15
+          initialDelaySeconds: 130
           periodSeconds: 10

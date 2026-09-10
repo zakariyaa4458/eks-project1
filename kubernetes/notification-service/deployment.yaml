@@ -33,7 +33,7 @@ spec:
       serviceAccountName: notification-service-service-account
       containers:
       - name: notification-service
-        image: notification-service:latest
+        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/notification-service:d3871de576a145717a665667415a7488143a2ec0-33
         securityContext:
             runAsNonRoot: true
             capabilities:
@@ -41,7 +41,11 @@ spec:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
         ports:
-        - containerPort: 8040
+        - containerPort: 8084
+        
+        envFrom:
+          - secretRef:
+              name: application-secret
 
 
         resources:
@@ -55,13 +59,13 @@ spec:
         livenessProbe:
           httpGet:
             path: /healthz
-            port: 8040
+            port: 8084
         
-          initialDelaySeconds: 3
+          initialDelaySeconds: 120
           periodSeconds: 3
 
         readinessProbe:
           tcpSocket:
-            port: 8040
-          initialDelaySeconds: 15
-          periodSeconds: 10
+            port: 8084
+          initialDelaySeconds: 40
+          periodSeconds: 15
