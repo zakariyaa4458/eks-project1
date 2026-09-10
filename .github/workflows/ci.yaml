@@ -125,6 +125,15 @@ jobs:
                 kubectl get svc -n traefik || true
                 helm status traefik -n traefik || true
 
+        - name: Reinitialize Terraform backend
+          run: |
+                 rm -rf .terraform
+                 terraform init -reconfigure
+
+        - name: Verify current state
+          run: |
+                terraform state pull | grep -E '"lineage"|"serial"' 
+
         - name: terraform-plan
           
           env: 
