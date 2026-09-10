@@ -68,7 +68,7 @@ module "aws-load-balancer-controller" {
   cluster_identity_oidc_issuer_arn = var.aws_iam_openid_connect_provider_arn
 
   service_account_name      = "aws-load-balancer-controller"
-  service_account_namespace = "kube-system"
+  service_account_namespace = "aws-load-balancer-controller"
 
   enabled = true
 

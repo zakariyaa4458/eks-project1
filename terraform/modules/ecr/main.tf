@@ -8,7 +8,7 @@ resource "aws_ecr_repository" "eks-repositories" {
   encryption_configuration {
     encryption_type = "KMS"
 
-    kms_key = var.aws_key_ecr_arn
+   # kms_key = var.aws_key_ecr_arn
   }
 
   image_scanning_configuration {
