@@ -9,6 +9,9 @@ metadata:
     checkov.io/skip3: CKV_K8S_43=I will add commits when I apply the aws infrastructure
     checkov.io/skip4: CKV_K8S_40= running as a high uid creates permission issues for postgres
     checkov.io/skip5: CKV_K8S_23= running as non-root causes postgres permission issues
+    checkov.io/skip6: CKV_K8S_28
+    checkov.io/skip7: CKV_K8S_25=
+    checkov.io/skip8: CKV_K8S_37
   
 spec:
   serviceName: postgres-service

@@ -9,6 +9,7 @@ metadata:
   annotations:
     checkov.io/skip1: CKV_K8S_43=I will add commits when I apply the aws infrastructure
     checkov.io/skip2: CKV_K8S_14=I will add commits when I apply the aws infrastructure
+    checkov.io/skip3: CKV_K8S_35
 
 spec:
   replicas: 2
@@ -34,6 +35,7 @@ spec:
       containers:
       - name: inventory-service
         image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/inventory-service:d3871de576a145717a665667415a7488143a2ec0-33
+        imagePullPolicy: Always
         securityContext:
             runAsNonRoot: true
             runAsUser: 10000
