@@ -92,7 +92,13 @@ jobs:
 
         - name: terraform-init
           run: terraform init
-
+        
+        - name: Check Terraform state
+          run: |
+                terraform workspace show
+                terraform state pull | grep -E '"lineage"|"serial"'
+                terraform state list | grep traefik || true
+                
         - name: terraform-fmt
           run: terraform fmt 
 
