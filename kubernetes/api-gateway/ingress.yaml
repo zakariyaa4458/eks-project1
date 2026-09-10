@@ -2,7 +2,9 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: api-gateway-ingress
-  namespace: traefik
+  namespace: application-namespace
+  annotations: 
+    cert-manager.io/cluster-issuer: issuer
 spec:
   tls:
   - hosts:
