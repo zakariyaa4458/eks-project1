@@ -34,7 +34,7 @@ spec:
       serviceAccountName: dashboard-api-service-account
       containers:
       - name: dashboard-api
-        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/dashboard-api:d3871de576a145717a665667415a7488143a2ec0-33
+        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/dashboard-api:b061f847a4087d595bb0c1a632cd857f0ff89845-43
         imagePullPolicy: Always
         securityContext:
             runAsNonRoot: true

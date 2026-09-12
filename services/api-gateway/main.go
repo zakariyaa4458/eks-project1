@@ -180,22 +180,32 @@ func handleProxy(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Auth check (skip for public endpoints)
-	if !isPublicPath(r.URL.Path) {
-		claims, err := validateToken(r)
-		if err != nil {
-			httpError(w, "unauthorized: "+err.Error(), http.StatusUnauthorized)
-			return
-		}
-		// Forward user info to downstream services
-		if sub, ok := claims["sub"].(string); ok {
-			r.Header.Set("X-User-Email", sub)
-		}
-		if role, ok := claims["role"].(string); ok {
-			r.Header.Set("X-User-Role", role)
-		}
+	// CORS headers
+w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8086")
+w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+
+// Handle CORS preflight before authentication
+if r.Method == http.MethodOptions {
+	w.WriteHeader(http.StatusNoContent)
+	return
+}
+
+// Auth check (skip for public endpoints)
+if !isPublicPath(r.URL.Path) {
+	claims, err := validateToken(r)
+	if err != nil {
+		httpError(w, "unauthorized: "+err.Error(), http.StatusUnauthorized)
+		return
 	}
 
+	if sub, ok := claims["sub"].(string); ok {
+		r.Header.Set("X-User-Email", sub)
+	}
+	if role, ok := claims["role"].(string); ok {
+		r.Header.Set("X-User-Role", role)
+	}
+}
 	// Find matching route
 	for prefix, targetURL := range routes {
 		if strings.HasPrefix(r.URL.Path, prefix) {
