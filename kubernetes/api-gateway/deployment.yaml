@@ -34,7 +34,7 @@ spec:
       serviceAccountName: api-gateway-service-account
       containers:
         - name: api-gateway
-          image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/api-gateway:d3871de576a145717a665667415a7488143a2ec0-33
+          image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/api-gateway:11546640abb426a405151e627291058d7c73c6fb-44
           imagePullPolicy: Always
           securityContext:
             runAsNonRoot: true

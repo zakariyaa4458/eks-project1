@@ -66,7 +66,7 @@ func main() {
 	port := getEnv("PORT", "8080")
 	server := &http.Server{
 		Addr:         ":" + port,
-		Handler:      mux,
+		Handler:      corsMiddleware(mux),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  120 * time.Second,
@@ -180,16 +180,7 @@ func handleProxy(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// CORS headers
-w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8086")
-w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
 
-// Handle CORS preflight before authentication
-if r.Method == http.MethodOptions {
-	w.WriteHeader(http.StatusNoContent)
-	return
-}
 
 // Auth check (skip for public endpoints)
 if !isPublicPath(r.URL.Path) {
@@ -318,4 +309,17 @@ func gracefulShutdown(server *http.Server) {
 	})
 }
 
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8086")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
 
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
