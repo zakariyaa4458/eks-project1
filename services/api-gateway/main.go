@@ -36,7 +36,7 @@ func main() {
 		"/api/payments":      getEnv("PAYMENT_SERVICE_URL", "http://payment-service-service"),
 		"/api/notifications": getEnv("NOTIFICATION_SERVICE_URL", "http://notification-service-service"),
 		"/api/shipping":      getEnv("SHIPPING_SERVICE_URL", "http://shipping-service-service"),
-		"/api/dashboard":     getEnv("DASHBOARD_SERVICE_URL", "http://dashboard-api-service"),
+		"/dashboard":     getEnv("DASHBOARD_SERVICE_URL", "http://dashboard-api-service"),
 	}
 
 	// Redis for rate limiting
@@ -213,10 +213,12 @@ if !isPublicPath(r.URL.Path) {
 			}
 
 			// Strip the route prefix for downstream
+			if prefix != "/dashboard" {
 			r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
 			if r.URL.Path == "" {
 				r.URL.Path = "/"
 			}
+		}
 			r.Header.Set("X-Forwarded-For", r.RemoteAddr)
 			r.Header.Set("X-Request-ID", fmt.Sprintf("%d", time.Now().UnixNano()))
 
