@@ -179,7 +179,7 @@
     <div id="toast"></div>
 
     <script>
-        const API = window.location.origin;
+        const API = 'https://api.ecommerce.zakariyaalab.com';
         let token = localStorage.getItem('token') || '';
 
         // Auto-login on load
@@ -263,7 +263,7 @@
             } catch(e) { console.error('Orders error', e); }
         }
 
-        async function createOrder() {
+         async function createOrder() {
             const product = document.getElementById('order-product').value;
             const qty = parseInt(document.getElementById('order-qty').value) || 1;
             const price = parseFloat(document.getElementById('order-price').value) || 0;
