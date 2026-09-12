@@ -29,7 +29,7 @@ spec:
       serviceAccountName: payment-service-service-account
       containers:
         - name: payment-service
-          image: payment-service:16061f4a2a25ed34bcb44db6f549adc08f1676d9-45
+          image: payment-service:c85fcf99b42ec497d91a42979aeb6c7056db18df-46
           securityContext:
             runAsNonRoot: true
             runAsUser: 10000
