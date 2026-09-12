@@ -31,12 +31,12 @@ func main() {
 
 	// Service routes - internal service URLs
 	routes = map[string]string{
-		"/api/orders":        getEnv("ORDER_SERVICE_URL", "http://order-service:8081"),
-		"/api/inventory":     getEnv("INVENTORY_SERVICE_URL", "http://inventory-service:8082"),
-		"/api/payments":      getEnv("PAYMENT_SERVICE_URL", "http://payment-service:8083"),
-		"/api/notifications": getEnv("NOTIFICATION_SERVICE_URL", "http://notification-service:8084"),
-		"/api/shipping":      getEnv("SHIPPING_SERVICE_URL", "http://shipping-service:8085"),
-		"/api/dashboard":     getEnv("DASHBOARD_SERVICE_URL", "http://dashboard-api:8086"),
+		"/api/orders":        getEnv("ORDER_SERVICE_URL", "http://order-service-service"),
+		"/api/inventory":     getEnv("INVENTORY_SERVICE_URL", "http://inventory-service-service"),
+		"/api/payments":      getEnv("PAYMENT_SERVICE_URL", "http://payment-service-service"),
+		"/api/notifications": getEnv("NOTIFICATION_SERVICE_URL", "http://notification-service-service"),
+		"/api/shipping":      getEnv("SHIPPING_SERVICE_URL", "http://shipping-service-service"),
+		"/api/dashboard":     getEnv("DASHBOARD_SERVICE_URL", "http://dashboard-api-service"),
 	}
 
 	// Redis for rate limiting
