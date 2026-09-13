@@ -14,6 +14,10 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+	
+	"github.com/aws/aws-sdk-go-v2/aws"
+    "github.com/aws/aws-sdk-go-v2/config"
+    "github.com/aws/aws-sdk-go-v2/service/sqs"
 )
 
 var db *sql.DB
@@ -373,6 +377,7 @@ func handleUpdateStatus(w http.ResponseWriter, r *http.Request) {
 
 func publishEvent(eventType string, payload map[string]interface{}) {
 	sqsQueue := os.Getenv("SQS_QUEUE_URL")
+
 	if sqsQueue == "" {
 		log.Printf("Event (no SQS): %s %v", eventType, payload)
 		return
@@ -383,9 +388,40 @@ func publishEvent(eventType string, payload map[string]interface{}) {
 		"payload":   payload,
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	}
-	data, _ := json.Marshal(event)
-	log.Printf("Event -> SQS: %s", string(data))
-	// Students implement actual SQS SendMessage here
+
+	data, err := json.Marshal(event)
+	if err != nil {
+		log.Printf("Failed to marshal event: %v", err)
+		return
+	}
+
+	// Load AWS configuration.
+	// In EKS, the AWS SDK will use the IRSA credentials automatically.
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		log.Printf("Failed to load AWS config: %v", err)
+		return
+	}
+
+	// Create the SQS client.
+	client := sqs.NewFromConfig(cfg)
+
+	// Send the event to SQS.
+	result, err := client.SendMessage(context.TODO(), &sqs.SendMessageInput{
+		QueueUrl:    aws.String(sqsQueue),
+		MessageBody: aws.String(string(data)),
+	})
+
+	if err != nil {
+		log.Printf("Failed to send event to SQS: %v", err)
+		return
+	}
+
+	log.Printf(
+		"Event sent to SQS: type=%s messageId=%s",
+		eventType,
+		aws.ToString(result.MessageId),
+	)
 }
 
 func httpError(w http.ResponseWriter, msg string, code int) {
