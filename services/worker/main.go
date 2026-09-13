@@ -158,7 +158,14 @@ func handleEvent(client *http.Client, services map[string]string, event Event) e
 
 		// 4. Update order to confirmed
 		log.Printf("  -> Confirming order")
-	// PUT to order-service/status with new_status: "confirmed"
+
+		orderURL := services["order"]
+
+		if err := confirmOrder(client, orderURL, event); err != nil {
+			return fmt.Errorf("failed to confirm order: %w", err)
+		}
+
+		log.Printf("  -> Order confirmed successfully")
 
 	case "order.status_changed":
 		newStatus, _ := event.Payload["new_status"].(string)
@@ -453,6 +460,52 @@ func sendOrderConfirmation(client *http.Client, notificationURL string, event Ev
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf(
 			"notification service returned %d: %s",
+			resp.StatusCode,
+			string(respBody),
+		)
+	}
+
+	return nil
+}
+
+func confirmOrder(client *http.Client, orderURL string, event Event) error {
+	orderID, ok := event.Payload["order_id"].(float64)
+	if !ok {
+		return fmt.Errorf("missing or invalid order_id")
+	}
+
+	body := map[string]interface{}{
+		"order_id":   int(orderID),
+		"new_status": "confirmed",
+	}
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("failed to marshal order status request: %w", err)
+	}
+
+	req, err := http.NewRequest(
+		http.MethodPut,
+		orderURL+"/status",
+		bytes.NewBuffer(data),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create order status request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("order status request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf(
+			"order service returned %d: %s",
 			resp.StatusCode,
 			string(respBody),
 		)
