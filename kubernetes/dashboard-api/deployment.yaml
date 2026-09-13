@@ -29,7 +29,7 @@ spec:
       serviceAccountName: dashboard-api-service-account
       containers:
         - name: dashboard-api
-          image: dashboard:c271f5a720b3cb094015afebd7a399d75c255749-54
+          image: dashboard:1a29e197c899c0bfe5feb536d54b0fe77de2f139-55
           securityContext:
             runAsNonRoot: true
             runAsUser: 10000

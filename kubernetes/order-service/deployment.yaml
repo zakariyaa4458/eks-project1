@@ -29,7 +29,7 @@ spec:
       serviceAccountName: order-service-service-account
       containers:
         - name: order-service
-          image: order-service:c271f5a720b3cb094015afebd7a399d75c255749-54
+          image: order-service:1a29e197c899c0bfe5feb536d54b0fe77de2f139-55
           securityContext:
             runAsNonRoot: true
             capabilities:
