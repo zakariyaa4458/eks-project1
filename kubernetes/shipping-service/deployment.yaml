@@ -29,7 +29,7 @@ spec:
       serviceAccountName: shipping-service-service-account
       containers:
         - name: shipping-service
-          image: shipping-service:f0d0bdfd45254157f41558f166b90c58a6c875f8-52
+          image: shipping-service:5e4452cd969a33194e986888c13f6a7c6c8d8f91-53
           securityContext:
             runAsNonRoot: true
             capabilities:
