@@ -10,6 +10,10 @@ import (
 	"syscall"
 	"time"
 
+	"bytes"
+    "fmt"
+    "io"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
@@ -35,11 +39,11 @@ func main() {
 
 	// Internal service URLs for event-driven calls
 	services := map[string]string{
-		"inventory":    getEnv("INVENTORY_SERVICE_URL", "http://inventory-service:8082"),
-		"payment":      getEnv("PAYMENT_SERVICE_URL", "http://payment-service:8083"),
-		"notification": getEnv("NOTIFICATION_SERVICE_URL", "http://notification-service:8084"),
-		"shipping":     getEnv("SHIPPING_SERVICE_URL", "http://shipping-service:8085"),
-		"order":        getEnv("ORDER_SERVICE_URL", "http://order-service:8081"),
+		"inventory":    getEnv("INVENTORY_SERVICE_URL", "http://inventory-service-service"),
+		"payment":      getEnv("PAYMENT_SERVICE_URL", "http://payment-service-service"),
+		"notification": getEnv("NOTIFICATION_SERVICE_URL", "http://notification-service-service"),
+		"shipping":     getEnv("SHIPPING_SERVICE_URL", "http://shipping-service-service"),
+		"order":        getEnv("ORDER_SERVICE_URL", "http://order-service-service"),
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -120,23 +124,29 @@ func handleEvent(client *http.Client, services map[string]string, event Event) e
 	switch event.Type {
 
 	case "order.created":
-		// 1. Reserve inventory
-		log.Printf("  -> Reserving inventory for order")
-		// POST to inventory-service/reserve with order items
-		// If reservation fails, update order status to "cancelled"
+	// 1. Reserve inventory
+	log.Printf("  -> Reserving inventory for order")
 
-		// 2. Process payment
-		log.Printf("  -> Processing payment")
-		// POST to payment-service/charge
-		// If payment fails, release inventory reservation
+	inventoryURL := services["inventory"]
 
-		// 3. Send confirmation notification
-		log.Printf("  -> Sending order confirmation")
-		// POST to notification-service/send with order_confirmed template
+	if err := reserveInventory(client, inventoryURL, event); err != nil {
+		return fmt.Errorf("failed to reserve inventory: %w", err)
+	}
 
-		// 4. Update order to confirmed
-		log.Printf("  -> Confirming order")
-		// PUT to order-service/status with new_status: "confirmed"
+	log.Printf("  -> Inventory reserved successfully")
+
+	// 2. Process payment
+	log.Printf("  -> Processing payment")
+	// POST to payment-service/charge
+	// If payment fails, release inventory reservation
+
+	// 3. Send confirmation notification
+	log.Printf("  -> Sending order confirmation")
+	// POST to notification-service/send with order_confirmed template
+
+	// 4. Update order to confirmed
+	log.Printf("  -> Confirming order")
+	// PUT to order-service/status with new_status: "confirmed"
 
 	case "order.status_changed":
 		newStatus, _ := event.Payload["new_status"].(string)
@@ -247,4 +257,60 @@ func deleteSQSMessage(ctx context.Context, queueURL, receiptHandle string) error
 	})
 
 	return err
+}
+
+func reserveInventory(
+	client *http.Client,
+	inventoryURL string,
+	event Event,
+) error {
+
+	orderID, ok := event.Payload["order_id"].(float64)
+	if !ok {
+		return fmt.Errorf("missing or invalid order_id")
+	}
+
+	items, ok := event.Payload["items"]
+	if !ok {
+		return fmt.Errorf("missing order items")
+	}
+
+	payload := map[string]interface{}{
+		"order_id": int(orderID),
+		"items":    items,
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("failed to marshal inventory request: %w", err)
+	}
+
+	req, err := http.NewRequest(
+		http.MethodPost,
+		inventoryURL+"/reserve",
+		bytes.NewBuffer(body),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create inventory request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("inventory request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		responseBody, _ := io.ReadAll(resp.Body)
+
+		return fmt.Errorf(
+			"inventory reservation failed: status=%d body=%s",
+			resp.StatusCode,
+			string(responseBody),
+		)
+	}
+
+	return nil
 }
