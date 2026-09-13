@@ -217,7 +217,7 @@ data "aws_iam_policy_document" "order_iam_policy_document" {
 
 resource "aws_iam_policy" "order_iam_policy" {
   name   = "order-iam-policy"
-  policy = data.aws_iam_policy_document.order_iam_policy_document
+  policy = data.aws_iam_policy_document.order_iam_policy_document.json
 }
 
 resource "aws_iam_role_policy_attachment" "order_iam_policy_attachment" {
