@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"bytes"
-    "fmt"
-    "io"
+	"fmt"
+	"io"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -124,28 +124,33 @@ func handleEvent(client *http.Client, services map[string]string, event Event) e
 	switch event.Type {
 
 	case "order.created":
-	// 1. Reserve inventory
-	log.Printf("  -> Reserving inventory for order")
+		// 1. Reserve inventory
+		log.Printf("  -> Reserving inventory for order")
 
-	inventoryURL := services["inventory"]
+		inventoryURL := services["inventory"]
 
-	if err := reserveInventory(client, inventoryURL, event); err != nil {
-		return fmt.Errorf("failed to reserve inventory: %w", err)
-	}
+		if err := reserveInventory(client, inventoryURL, event); err != nil {
+			return fmt.Errorf("failed to reserve inventory: %w", err)
+		}
 
-	log.Printf("  -> Inventory reserved successfully")
+		log.Printf("  -> Inventory reserved successfully")
 
-	// 2. Process payment
-	log.Printf("  -> Processing payment")
-	// POST to payment-service/charge
-	// If payment fails, release inventory reservation
+		// 2. Process payment
+		log.Printf("  -> Processing payment")
+		paymentURL := services["payment"]
 
-	// 3. Send confirmation notification
-	log.Printf("  -> Sending order confirmation")
-	// POST to notification-service/send with order_confirmed template
+		if err := chargePayment(client, paymentURL, event); err != nil {
+			return fmt.Errorf("failed to process payment: %w", err)
+		}
 
-	// 4. Update order to confirmed
-	log.Printf("  -> Confirming order")
+		log.Printf("  -> Payment completed successfully")
+
+		// 3. Send confirmation notification
+		log.Printf("  -> Sending order confirmation")
+		// POST to notification-service/send with order_confirmed template
+
+		// 4. Update order to confirmed
+		log.Printf("  -> Confirming order")
 	// PUT to order-service/status with new_status: "confirmed"
 
 	case "order.status_changed":
@@ -309,6 +314,73 @@ func reserveInventory(
 			"inventory reservation failed: status=%d body=%s",
 			resp.StatusCode,
 			string(responseBody),
+		)
+	}
+
+	return nil
+}
+
+func chargePayment(client *http.Client, paymentURL string, event Event) error {
+	orderID, ok := event.Payload["order_id"].(float64)
+	if !ok {
+		return fmt.Errorf("missing or invalid order_id")
+	}
+
+	customerID, ok := event.Payload["customer_id"].(string)
+	if !ok || customerID == "" {
+		return fmt.Errorf("missing or invalid customer_id")
+	}
+
+	total, ok := event.Payload["total"].(float64)
+	if !ok {
+		return fmt.Errorf("missing or invalid total")
+	}
+
+	currency, _ := event.Payload["currency"].(string)
+	if currency == "" {
+		currency = "GBP"
+	}
+
+	body := map[string]interface{}{
+		"order_id":    int(orderID),
+		"customer_id": customerID,
+		"amount":      total,
+		"currency":    currency,
+		"method":      "card",
+	}
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(
+		http.MethodPost,
+		paymentURL+"/charge",
+		bytes.NewBuffer(data),
+	)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode == http.StatusPaymentRequired {
+		return fmt.Errorf("payment failed: %s", string(respBody))
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("payment service returned %d: %s",
+			resp.StatusCode,
+			string(respBody),
 		)
 	}
 
