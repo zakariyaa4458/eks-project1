@@ -302,7 +302,7 @@ func getOrder(w http.ResponseWriter, r *http.Request, id string) {
 	json.NewEncoder(w).Encode(o)
 }
 
-func handleUpdateStatus(w http.ResponseWriter, r *http.Request) {
+func handleUpdateStatus (w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
 		httpError(w, "method not allowed", http.StatusMethodNotAllowed)
 		return

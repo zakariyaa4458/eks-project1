@@ -108,7 +108,9 @@ func migrate() {
 			created_at TIMESTAMP DEFAULT NOW(),
 			updated_at TIMESTAMP DEFAULT NOW()
 		)`,
+
 		`CREATE INDEX IF NOT EXISTS idx_products_sku ON products(sku)`,
+
 		`CREATE TABLE IF NOT EXISTS reservations (
 			id SERIAL PRIMARY KEY,
 			order_id INTEGER NOT NULL,
@@ -118,14 +120,22 @@ func migrate() {
 			expires_at TIMESTAMP NOT NULL,
 			created_at TIMESTAMP DEFAULT NOW()
 		)`,
+
 		`CREATE INDEX IF NOT EXISTS idx_reservations_order ON reservations(order_id)`,
+
 		`CREATE INDEX IF NOT EXISTS idx_reservations_status ON reservations(status)`,
+
+		`CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_active_reservation
+		 ON reservations(order_id, product_id)
+		 WHERE status = 'active'`,
 	}
+
 	for _, m := range migrations {
 		if _, err := db.Exec(m); err != nil {
 			log.Fatalf("Migration failed: %v", err)
 		}
 	}
+
 	log.Println("Inventory service migrations complete")
 }
 
@@ -243,9 +253,36 @@ func handleReserve(w http.ResponseWriter, r *http.Request) {
 	expiresAt := time.Now().Add(15 * time.Minute)
 
 	for _, item := range req.Items {
-		// Check available stock with row lock
-		var stock, reserved int
-		err := tx.QueryRow(
+	// Check whether this order already has an active reservation
+	var existingCount int
+
+	err = tx.QueryRow(
+		`SELECT COUNT(*)
+		 FROM reservations
+		 WHERE order_id = $1
+		   AND product_id = $2
+		   AND status = 'active'`,
+		req.OrderID,
+		item.ProductID,
+	).Scan(&existingCount)
+
+	if err != nil {
+		httpError(w, "failed to check existing reservation", http.StatusInternalServerError)
+		return
+	}
+
+	if existingCount > 0 {
+		log.Printf(
+			"Reservation already exists for order %d product %s, skipping duplicate",
+			req.OrderID,
+			item.ProductID,
+		)
+		continue
+	}
+
+	// Check available stock with row lock
+	var stock, reserved int
+		err = tx.QueryRow(
 			"SELECT stock, reserved FROM products WHERE id = $1 FOR UPDATE",
 			item.ProductID,
 		).Scan(&stock, &reserved)
