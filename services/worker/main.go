@@ -423,6 +423,7 @@ func sendOrderConfirmation(client *http.Client, notificationURL string, event Ev
 	}
 
 	body := map[string]interface{}{
+		"order_id":  int(orderID),
 		"recipient": customerID,
 		"channel":   "email",
 		"template":  "order_confirmed",

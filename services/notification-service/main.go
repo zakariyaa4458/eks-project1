@@ -73,27 +73,40 @@ func main() {
 func migrate() {
 	migrations := []string{
 		`CREATE TABLE IF NOT EXISTS notifications (
-			id SERIAL PRIMARY KEY,
-			recipient VARCHAR(255) NOT NULL,
-			channel VARCHAR(20) NOT NULL,
-			template VARCHAR(100) NOT NULL,
-			subject TEXT,
-			body TEXT NOT NULL,
-			metadata JSONB,
-			status VARCHAR(20) NOT NULL DEFAULT 'pending',
-			sent_at TIMESTAMP,
-			created_at TIMESTAMP DEFAULT NOW()
-		)`,
-		`CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON notifications(recipient)`,
-		`CREATE INDEX IF NOT EXISTS idx_notifications_status ON notifications(status)`,
+		id SERIAL PRIMARY KEY,
+		order_id INTEGER,
+		recipient VARCHAR(255) NOT NULL,
+		channel VARCHAR(20) NOT NULL,
+		template VARCHAR(100) NOT NULL,
+		subject TEXT,
+		body TEXT NOT NULL,
+		metadata JSONB,
+		status VARCHAR(20) NOT NULL DEFAULT 'pending',
+		sent_at TIMESTAMP,
+		created_at TIMESTAMP DEFAULT NOW()
+	)`,
+
+		`ALTER TABLE notifications
+	 ADD COLUMN IF NOT EXISTS order_id INTEGER`,
+
+		`CREATE INDEX IF NOT EXISTS idx_notifications_recipient
+	 ON notifications(recipient)`,
+
+		`CREATE INDEX IF NOT EXISTS idx_notifications_status
+	 ON notifications(status)`,
+
+		`CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_sent_order_notification
+	 ON notifications(order_id, template)
+	 WHERE status = 'sent' AND order_id IS NOT NULL`,
+
 		`CREATE TABLE IF NOT EXISTS notification_templates (
-			id VARCHAR(100) PRIMARY KEY,
-			channel VARCHAR(20) NOT NULL,
-			subject TEXT,
-			body TEXT NOT NULL,
-			created_at TIMESTAMP DEFAULT NOW(),
-			updated_at TIMESTAMP DEFAULT NOW()
-		)`,
+		id VARCHAR(100) PRIMARY KEY,
+		channel VARCHAR(20) NOT NULL,
+		subject TEXT,
+		body TEXT NOT NULL,
+		created_at TIMESTAMP DEFAULT NOW(),
+		updated_at TIMESTAMP DEFAULT NOW()
+	)`,
 	}
 	for _, m := range migrations {
 		if _, err := db.Exec(m); err != nil {
@@ -142,18 +155,25 @@ func handleSend(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
+		OrderID   int                    `json:"order_id"`
 		Recipient string                 `json:"recipient"`
 		Channel   string                 `json:"channel"`
 		Template  string                 `json:"template"`
 		Data      map[string]interface{} `json:"data"`
 	}
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httpError(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	if req.Recipient == "" || req.Template == "" {
-		httpError(w, "recipient and template required", http.StatusBadRequest)
+	if req.Recipient == "" {
+		httpError(w, "recipient is required", http.StatusBadRequest)
+		return
+	}
+
+	if req.Template == "" {
+		httpError(w, "template is required", http.StatusBadRequest)
 		return
 	}
 
@@ -161,41 +181,109 @@ func handleSend(w http.ResponseWriter, r *http.Request) {
 		req.Channel = "email"
 	}
 
-	// Look up template
-	var subject, body string
-	err := db.QueryRow(
-		"SELECT subject, body FROM notification_templates WHERE id = $1",
-		req.Template,
-	).Scan(&subject, &body)
-	if err != nil {
-		// Use template name as-is if not found
-		subject = req.Template
-		body = req.Template
+	// Idempotency check:
+	// If this order has already received this notification,
+	// return the existing notification instead of sending another one.
+	if req.OrderID != 0 {
+		var existingNotificationID int
+
+		err := db.QueryRow(
+			`SELECT id
+			 FROM notifications
+			 WHERE order_id = $1
+			   AND template = $2
+			   AND status = 'sent'
+			 LIMIT 1`,
+			req.OrderID,
+			req.Template,
+		).Scan(&existingNotificationID)
+
+		if err == nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"notification_id": existingNotificationID,
+				"order_id":        req.OrderID,
+				"status":          "sent",
+			})
+			return
+		}
+
+		if err != sql.ErrNoRows {
+			httpError(w, "failed to check existing notification", http.StatusInternalServerError)
+			return
+		}
 	}
 
-	metadata, _ := json.Marshal(req.Data)
+	// Load notification template
+	var subject sql.NullString
+	var body string
 
-	// In production: SES for email, SNS for SMS
-	// For this project, simulate sending and log it
-	status := "sent"
-	sentAt := time.Now()
+	err := db.QueryRow(
+		`SELECT subject, body
+		 FROM notification_templates
+		 WHERE id = $1
+		   AND channel = $2`,
+		req.Template,
+		req.Channel,
+	).Scan(&subject, &body)
 
-	var notifID int
-	db.QueryRow(
-		`INSERT INTO notifications (recipient, channel, template, subject, body, metadata, status, sent_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
-		req.Recipient, req.Channel, req.Template, subject, body, metadata, status, sentAt,
-	).Scan(&notifID)
+	if err == sql.ErrNoRows {
+		httpError(w, "notification template not found", http.StatusNotFound)
+		return
+	}
 
-	log.Printf("Notification sent: [%s] %s -> %s (template: %s)", req.Channel, req.Template, req.Recipient, req.Template)
+	if err != nil {
+		httpError(w, "failed to load notification template", http.StatusInternalServerError)
+		return
+	}
+
+	// Store notification data as JSON metadata
+	metadata, err := json.Marshal(req.Data)
+	if err != nil {
+		httpError(w, "failed to encode notification data", http.StatusInternalServerError)
+		return
+	}
+
+	// Simulated notification sending
+	log.Printf(
+		"Sending %s notification to %s using template %s for order %d",
+		req.Channel,
+		req.Recipient,
+		req.Template,
+		req.OrderID,
+	)
+
+	var notificationID int
+
+	err = db.QueryRow(
+		`INSERT INTO notifications
+			(order_id, recipient, channel, template, subject, body, metadata, status, sent_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, 'sent', NOW())
+		 RETURNING id`,
+		req.OrderID,
+		req.Recipient,
+		req.Channel,
+		req.Template,
+		subject,
+		body,
+		metadata,
+	).Scan(&notificationID)
+
+	if err != nil {
+		httpError(w, "failed to save notification", http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"id":        notifID,
-		"recipient": req.Recipient,
-		"channel":   req.Channel,
-		"status":    status,
+		"notification_id": notificationID,
+		"order_id":        req.OrderID,
+		"recipient":       req.Recipient,
+		"channel":         req.Channel,
+		"template":        req.Template,
+		"status":          "sent",
 	})
 }
 

@@ -226,7 +226,10 @@ func handleCharge(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
-	tx.Commit()
+	if err := tx.Commit(); err != nil {
+		httpError(w, "payment commit failed", http.StatusInternalServerError)
+		return
+	}
 
 	// Publish event
 	publishEvent("payment."+status, map[string]interface{}{
