@@ -9,7 +9,16 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 )
+
+type SQSMessage struct {
+	Body          string
+	ReceiptHandle string
+}
 
 // Event represents a message from SQS
 type Event struct {
@@ -73,9 +82,10 @@ func pollAndProcess(ctx context.Context, queueURL string, services map[string]st
 		default:
 			messages := receiveSQSMessages(ctx, queueURL)
 
-			for _, raw := range messages {
+			for _, message := range messages {
 				var event Event
-				if err := json.Unmarshal([]byte(raw), &event); err != nil {
+
+				if err := json.Unmarshal([]byte(message.Body), &event); err != nil {
 					log.Printf("Failed to parse event: %v", err)
 					continue
 				}
@@ -89,7 +99,14 @@ func pollAndProcess(ctx context.Context, queueURL string, services map[string]st
 				}
 
 				log.Printf("Successfully processed: %s", event.Type)
-				// Delete message from SQS after successful processing
+
+				if err := deleteSQSMessage(ctx, queueURL, message.ReceiptHandle); err != nil {
+					log.Printf("Failed to delete SQS message: %v", err)
+					continue
+				}
+
+				log.Printf("Deleted message from SQS: %s", event.Type)
+
 			}
 
 			if len(messages) == 0 {
@@ -177,13 +194,36 @@ func handleEvent(client *http.Client, services map[string]string, event Event) e
 	return nil
 }
 
-func receiveSQSMessages(ctx context.Context, queueURL string) []string {
-	// Students implement with AWS SDK SQS ReceiveMessage
-	// Use long polling: WaitTimeSeconds = 20
-	// MaxNumberOfMessages = 10
-	// Honour ctx during the long-poll so SIGTERM unblocks cleanly
-	_ = ctx
-	return nil
+func receiveSQSMessages(ctx context.Context, queueURL string) []SQSMessage {
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		log.Printf("Failed to load AWS config: %v", err)
+		return nil
+	}
+
+	client := sqs.NewFromConfig(cfg)
+
+	result, err := client.ReceiveMessage(ctx, &sqs.ReceiveMessageInput{
+		QueueUrl:            aws.String(queueURL),
+		MaxNumberOfMessages: 10,
+		WaitTimeSeconds:     20,
+	})
+
+	if err != nil {
+		log.Printf("Failed to receive SQS messages: %v", err)
+		return nil
+	}
+
+	messages := make([]SQSMessage, 0, len(result.Messages))
+
+	for _, msg := range result.Messages {
+		messages = append(messages, SQSMessage{
+			Body:          aws.ToString(msg.Body),
+			ReceiptHandle: aws.ToString(msg.ReceiptHandle),
+		})
+	}
+
+	return messages
 }
 
 func getEnv(key, fallback string) string {
@@ -191,4 +231,20 @@ func getEnv(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+func deleteSQSMessage(ctx context.Context, queueURL, receiptHandle string) error {
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return err
+	}
+
+	client := sqs.NewFromConfig(cfg)
+
+	_, err = client.DeleteMessage(ctx, &sqs.DeleteMessageInput{
+		QueueUrl:      aws.String(queueURL),
+		ReceiptHandle: aws.String(receiptHandle),
+	})
+
+	return err
 }
