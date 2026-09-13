@@ -52,6 +52,9 @@ spec:
         envFrom:
           - secretRef:
               name: application-secret
+              
+          - secretRef:
+              name: application-secret-sqs
 
         resources:
           requests:

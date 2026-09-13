@@ -33,7 +33,7 @@ spec:
       serviceAccountName: order-service-service-account
       containers:
       - name: order-service
-        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/order-service:d3871de576a145717a665667415a7488143a2ec0-33
+        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/order-service:f0d0bdfd45254157f41558f166b90c58a6c875f8-52
         imagePullPolicy: Always
         securityContext:
             runAsNonRoot: true
@@ -46,6 +46,8 @@ spec:
         envFrom:
           - secretRef:
               name: application-secret
+          - secretRef:
+              name: application-secret-sqs
 
         resources:
           requests:
