@@ -147,7 +147,14 @@ func handleEvent(client *http.Client, services map[string]string, event Event) e
 
 		// 3. Send confirmation notification
 		log.Printf("  -> Sending order confirmation")
-		// POST to notification-service/send with order_confirmed template
+
+		notificationURL := services["notification"]
+
+		if err := sendOrderConfirmation(client, notificationURL, event); err != nil {
+			return fmt.Errorf("failed to send order confirmation: %w", err)
+		}
+
+		log.Printf("  -> Order confirmation sent successfully")
 
 		// 4. Update order to confirmed
 		log.Printf("  -> Confirming order")
@@ -379,6 +386,73 @@ func chargePayment(client *http.Client, paymentURL string, event Event) error {
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("payment service returned %d: %s",
+			resp.StatusCode,
+			string(respBody),
+		)
+	}
+
+	return nil
+}
+
+func sendOrderConfirmation(client *http.Client, notificationURL string, event Event) error {
+	orderID, ok := event.Payload["order_id"].(float64)
+	if !ok {
+		return fmt.Errorf("missing or invalid order_id")
+	}
+
+	customerID, ok := event.Payload["customer_id"].(string)
+	if !ok || customerID == "" {
+		return fmt.Errorf("missing or invalid customer_id")
+	}
+
+	total, ok := event.Payload["total"].(float64)
+	if !ok {
+		return fmt.Errorf("missing or invalid total")
+	}
+
+	currency, _ := event.Payload["currency"].(string)
+	if currency == "" {
+		currency = "GBP"
+	}
+
+	body := map[string]interface{}{
+		"recipient": customerID,
+		"channel":   "email",
+		"template":  "order_confirmed",
+		"data": map[string]interface{}{
+			"OrderID":  int(orderID),
+			"Total":    total,
+			"Currency": currency,
+		},
+	}
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("failed to marshal notification request: %w", err)
+	}
+
+	req, err := http.NewRequest(
+		http.MethodPost,
+		notificationURL+"/send",
+		bytes.NewBuffer(data),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create notification request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("notification request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf(
+			"notification service returned %d: %s",
 			resp.StatusCode,
 			string(respBody),
 		)
