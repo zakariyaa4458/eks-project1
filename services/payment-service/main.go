@@ -143,11 +143,51 @@ func handleCharge(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	paymentID := generatePaymentID()
 	currency := req.Currency
 	if currency == "" {
 		currency = "GBP"
 	}
+
+	// Check whether this order has already been successfully paid
+	var existingPaymentID string
+	var existingAmount float64
+	var existingCurrency string
+	var existingStatus string
+
+	err := db.QueryRow(
+		`SELECT id, amount, currency, status
+	 FROM payments
+	 WHERE order_id = $1
+	   AND status = 'completed'
+	 LIMIT 1`,
+		req.OrderID,
+	).Scan(
+		&existingPaymentID,
+		&existingAmount,
+		&existingCurrency,
+		&existingStatus,
+	)
+
+	if err == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"payment_id": existingPaymentID,
+			"order_id":   req.OrderID,
+			"amount":     existingAmount,
+			"currency":   existingCurrency,
+			"status":     existingStatus,
+		})
+		return
+	}
+
+	if err != sql.ErrNoRows {
+		httpError(w, "failed to check existing payment", http.StatusInternalServerError)
+		return
+	}
+
+	// No completed payment exists, so process a new one
+	paymentID := generatePaymentID()
 
 	// Simulate payment processing (90% success rate)
 	status := "completed"
