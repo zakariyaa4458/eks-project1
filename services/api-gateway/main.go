@@ -313,7 +313,7 @@ func gracefulShutdown(server *http.Server) {
 
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8086")
+		w.Header().Set("Access-Control-Allow-Origin", "https://dashboard.ecommerce.zakariyaalab.com")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
 
