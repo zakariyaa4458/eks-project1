@@ -229,9 +229,21 @@ func handleEvent(client *http.Client, services map[string]string, event Event) e
 			log.Printf("  -> Shipment created successfully")
 
 		case "shipped":
-			// Notify customer
 			log.Printf("  -> Sending shipping notification")
-			// POST to notification-service/send with order_shipped template
+
+			notificationURL := services["notification"]
+			orderURL := services["order"]
+
+			if err := sendShippingNotification(
+				client,
+				notificationURL,
+				orderURL,
+				event,
+			); err != nil {
+				return fmt.Errorf("failed to send shipping notification: %w", err)
+			}
+
+			log.Printf("  -> Shipping notification sent successfully")
 
 		case "delivered":
 			log.Printf("  -> Sending delivery notification")
@@ -820,6 +832,101 @@ func updateOrderStatus(
 		return fmt.Errorf(
 			"order service returned %d: %s",
 			resp.StatusCode,
+			string(respBody),
+		)
+	}
+
+	return nil
+}
+
+func sendShippingNotification(
+	client *http.Client,
+	notificationURL string,
+	orderURL string,
+	event Event,
+) error {
+
+	orderID, ok := event.Payload["order_id"].(float64)
+	if !ok {
+		return fmt.Errorf("missing or invalid order_id")
+	}
+
+	// Fetch order so we know who to notify.
+	req, err := http.NewRequest(
+		http.MethodGet,
+		fmt.Sprintf("%s/%d", orderURL, int(orderID)),
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create order request: %w", err)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to fetch order: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		respBody, _ := io.ReadAll(resp.Body)
+
+		return fmt.Errorf(
+			"order service returned %d: %s",
+			resp.StatusCode,
+			string(respBody),
+		)
+	}
+
+	var order struct {
+		CustomerID string `json:"customer_id"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&order); err != nil {
+		return fmt.Errorf("failed to decode order: %w", err)
+	}
+
+	if order.CustomerID == "" {
+		return fmt.Errorf("order has no customer_id")
+	}
+
+	body := map[string]interface{}{
+		"order_id":  int(orderID),
+		"recipient": order.CustomerID,
+		"channel":   "email",
+		"template":  "order_shipped",
+		"data": map[string]interface{}{
+			"OrderID": int(orderID),
+		},
+	}
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("failed to marshal notification request: %w", err)
+	}
+
+	notificationReq, err := http.NewRequest(
+		http.MethodPost,
+		notificationURL+"/send",
+		bytes.NewBuffer(data),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create notification request: %w", err)
+	}
+
+	notificationReq.Header.Set("Content-Type", "application/json")
+
+	notificationResp, err := client.Do(notificationReq)
+	if err != nil {
+		return fmt.Errorf("notification request failed: %w", err)
+	}
+	defer notificationResp.Body.Close()
+
+	respBody, _ := io.ReadAll(notificationResp.Body)
+
+	if notificationResp.StatusCode < 200 || notificationResp.StatusCode >= 300 {
+		return fmt.Errorf(
+			"notification service returned %d: %s",
+			notificationResp.StatusCode,
 			string(respBody),
 		)
 	}
