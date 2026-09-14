@@ -20,6 +20,7 @@ import (
 )
 
 var ErrInsufficientStock = errors.New("insufficient stock")
+var ErrPaymentFailed = errors.New("payment failed")
 
 type SQSMessage struct {
 	Body          string
@@ -157,6 +158,32 @@ func handleEvent(client *http.Client, services map[string]string, event Event) e
 		paymentURL := services["payment"]
 
 		if err := chargePayment(client, paymentURL, event); err != nil {
+			if errors.Is(err, ErrPaymentFailed) {
+				log.Printf("  -> Payment failed, releasing inventory")
+
+				inventoryURL := services["inventory"]
+
+				if err := releaseInventory(client, inventoryURL, event); err != nil {
+					return fmt.Errorf("failed to release inventory: %w", err)
+				}
+
+				log.Printf("  -> Inventory released successfully")
+
+				log.Printf("  -> Cancelling order")
+
+				orderURL := services["order"]
+
+				if err := cancelOrder(client, orderURL, event); err != nil {
+					return fmt.Errorf("failed to cancel order: %w", err)
+				}
+
+				log.Printf("  -> Order cancelled successfully")
+
+				// Business failure handled successfully,
+				// so delete the SQS message.
+				return nil
+			}
+
 			return fmt.Errorf("failed to process payment: %w", err)
 		}
 
@@ -416,7 +443,7 @@ func chargePayment(client *http.Client, paymentURL string, event Event) error {
 	respBody, _ := io.ReadAll(resp.Body)
 
 	if resp.StatusCode == http.StatusPaymentRequired {
-		return fmt.Errorf("payment failed: %s", string(respBody))
+		return fmt.Errorf("%w: %s", ErrPaymentFailed, string(respBody))
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
@@ -581,6 +608,56 @@ func cancelOrder(client *http.Client, orderURL string, event Event) error {
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf(
 			"order service returned %d: %s",
+			resp.StatusCode,
+			string(respBody),
+		)
+	}
+
+	return nil
+}
+
+func releaseInventory(
+	client *http.Client,
+	inventoryURL string,
+	event Event,
+) error {
+
+	orderID, ok := event.Payload["order_id"].(float64)
+	if !ok {
+		return fmt.Errorf("missing or invalid order_id")
+	}
+
+	body := map[string]interface{}{
+		"order_id": int(orderID),
+	}
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("failed to marshal release request: %w", err)
+	}
+
+	req, err := http.NewRequest(
+		http.MethodPost,
+		inventoryURL+"/release",
+		bytes.NewBuffer(data),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create release request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("inventory release request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf(
+			"inventory release failed: status=%d body=%s",
 			resp.StatusCode,
 			string(respBody),
 		)
