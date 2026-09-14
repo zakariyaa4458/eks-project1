@@ -28,7 +28,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: scheduler
-          image: scheduler:8890e5d406df1e3268a5cd3882208cb76408e46b-62
+          image: scheduler:f31313a694804aae1607497075339e336ea9649e-63
           securityContext:
             runAsNonRoot: true
             capabilities:
