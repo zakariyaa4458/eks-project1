@@ -215,10 +215,18 @@ func handleEvent(client *http.Client, services map[string]string, event Event) e
 		newStatus, _ := event.Payload["new_status"].(string)
 
 		switch newStatus {
+
 		case "processing":
-			// Create shipment
 			log.Printf("  -> Creating shipment for order")
-			// POST to shipping-service/shipments
+
+			shippingURL := services["shipping"]
+			orderURL := services["order"]
+
+			if err := createShipment(client, shippingURL, orderURL, event); err != nil {
+				return fmt.Errorf("failed to create shipment: %w", err)
+			}
+
+			log.Printf("  -> Shipment created successfully")
 
 		case "shipped":
 			// Notify customer
@@ -660,6 +668,96 @@ func releaseInventory(
 			"inventory release failed: status=%d body=%s",
 			resp.StatusCode,
 			string(respBody),
+		)
+	}
+
+	return nil
+}
+
+func createShipment(
+	client *http.Client,
+	shippingURL string,
+	orderURL string,
+	event Event,
+) error {
+
+	orderID, ok := event.Payload["order_id"].(float64)
+	if !ok {
+		return fmt.Errorf("missing or invalid order_id")
+	}
+
+	// Fetch the order so we can get the customer information.
+	req, err := http.NewRequest(
+		http.MethodGet,
+		fmt.Sprintf("%s/%d", orderURL, int(orderID)),
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create order request: %w", err)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to fetch order: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		responseBody, _ := io.ReadAll(resp.Body)
+
+		return fmt.Errorf(
+			"order service returned %d: %s",
+			resp.StatusCode,
+			string(responseBody),
+		)
+	}
+
+	var order struct {
+		CustomerID string `json:"customer_id"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&order); err != nil {
+		return fmt.Errorf("failed to decode order: %w", err)
+	}
+
+	if order.CustomerID == "" {
+		return fmt.Errorf("order has no customer_id")
+	}
+
+	shipmentBody := map[string]interface{}{
+		"order_id":       int(orderID),
+		"recipient_name": order.CustomerID,
+	}
+
+	data, err := json.Marshal(shipmentBody)
+	if err != nil {
+		return fmt.Errorf("failed to marshal shipment request: %w", err)
+	}
+
+	shipmentReq, err := http.NewRequest(
+		http.MethodPost,
+		shippingURL+"/shipments",
+		bytes.NewBuffer(data),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create shipment request: %w", err)
+	}
+
+	shipmentReq.Header.Set("Content-Type", "application/json")
+
+	shipmentResp, err := client.Do(shipmentReq)
+	if err != nil {
+		return fmt.Errorf("shipping request failed: %w", err)
+	}
+	defer shipmentResp.Body.Close()
+
+	responseBody, _ := io.ReadAll(shipmentResp.Body)
+
+	if shipmentResp.StatusCode < 200 || shipmentResp.StatusCode >= 300 {
+		return fmt.Errorf(
+			"shipping service returned %d: %s",
+			shipmentResp.StatusCode,
+			string(responseBody),
 		)
 	}
 
