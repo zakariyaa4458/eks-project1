@@ -14,10 +14,10 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
-	
+
 	"github.com/aws/aws-sdk-go-v2/aws"
-    "github.com/aws/aws-sdk-go-v2/config"
-    "github.com/aws/aws-sdk-go-v2/service/sqs"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 )
 
 var db *sql.DB
@@ -302,7 +302,7 @@ func getOrder(w http.ResponseWriter, r *http.Request, id string) {
 	json.NewEncoder(w).Encode(o)
 }
 
-func handleUpdateStatus (w http.ResponseWriter, r *http.Request) {
+func handleUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
 		httpError(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -312,6 +312,7 @@ func handleUpdateStatus (w http.ResponseWriter, r *http.Request) {
 		OrderID   int    `json:"order_id"`
 		NewStatus string `json:"new_status"`
 	}
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httpError(w, "invalid request body", http.StatusBadRequest)
 		return
@@ -319,9 +320,29 @@ func handleUpdateStatus (w http.ResponseWriter, r *http.Request) {
 
 	// Get current status
 	var currentStatus string
-	err := db.QueryRow("SELECT status FROM orders WHERE id = $1", req.OrderID).Scan(&currentStatus)
+
+	err := db.QueryRow(
+		"SELECT status FROM orders WHERE id = $1",
+		req.OrderID,
+	).Scan(&currentStatus)
+
 	if err != nil {
 		httpError(w, "order not found", http.StatusNotFound)
+		return
+	}
+
+	// Idempotency check:
+	// If the order already has the requested status,
+	// treat the request as successful and do nothing.
+	if currentStatus == req.NewStatus {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"order_id": req.OrderID,
+			"status":   currentStatus,
+		})
+
 		return
 	}
 
@@ -333,34 +354,40 @@ func handleUpdateStatus (w http.ResponseWriter, r *http.Request) {
 	}
 
 	valid := false
+
 	for _, s := range allowed {
 		if s == req.NewStatus {
 			valid = true
 			break
 		}
 	}
+
 	if !valid {
-		httpError(w, fmt.Sprintf("cannot transition from %s to %s", currentStatus, req.NewStatus), http.StatusConflict)
+		httpError(
+			w,
+			fmt.Sprintf(
+				"cannot transition from %s to %s",
+				currentStatus,
+				req.NewStatus,
+			),
+			http.StatusConflict,
+		)
 		return
 	}
 
+	// Update status
 	_, err = db.Exec(
 		"UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2",
-		req.NewStatus, req.OrderID,
+		req.NewStatus,
+		req.OrderID,
 	)
+
 	if err != nil {
-		httpError(w, "failed to update order", http.StatusInternalServerError)
+		httpError(w, "failed to update order status", http.StatusInternalServerError)
 		return
 	}
 
-	// Record event
-	db.Exec(
-		`INSERT INTO order_events (order_id, event_type, old_status, new_status)
-		 VALUES ($1, 'status_changed', $2, $3)`,
-		req.OrderID, currentStatus, req.NewStatus,
-	)
-
-	// Publish event
+	// Publish status change only for a real transition
 	publishEvent("order.status_changed", map[string]interface{}{
 		"order_id":   req.OrderID,
 		"old_status": currentStatus,
@@ -368,10 +395,11 @@ func handleUpdateStatus (w http.ResponseWriter, r *http.Request) {
 	})
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"order_id":   req.OrderID,
-		"old_status": currentStatus,
-		"new_status": req.NewStatus,
+		"order_id": req.OrderID,
+		"status":   req.NewStatus,
 	})
 }
 
