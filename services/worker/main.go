@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -10,14 +14,12 @@ import (
 	"syscall"
 	"time"
 
-	"bytes"
-	"fmt"
-	"io"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 )
+
+var ErrInsufficientStock = errors.New("insufficient stock")
 
 type SQSMessage struct {
 	Body          string
@@ -130,6 +132,21 @@ func handleEvent(client *http.Client, services map[string]string, event Event) e
 		inventoryURL := services["inventory"]
 
 		if err := reserveInventory(client, inventoryURL, event); err != nil {
+			if errors.Is(err, ErrInsufficientStock) {
+				log.Printf("  -> Insufficient stock, cancelling order")
+
+				orderURL := services["order"]
+
+				if err := cancelOrder(client, orderURL, event); err != nil {
+					return fmt.Errorf("failed to cancel order: %w", err)
+				}
+
+				log.Printf("  -> Order cancelled successfully")
+
+				// Return nil so the SQS message gets deleted
+				return nil
+			}
+
 			return fmt.Errorf("failed to reserve inventory: %w", err)
 		}
 
@@ -321,6 +338,16 @@ func reserveInventory(
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == http.StatusConflict {
+		responseBody, _ := io.ReadAll(resp.Body)
+
+		return fmt.Errorf(
+			"%w: %s",
+			ErrInsufficientStock,
+			string(responseBody),
+		)
+	}
+
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		responseBody, _ := io.ReadAll(resp.Body)
 
@@ -332,6 +359,7 @@ func reserveInventory(
 	}
 
 	return nil
+
 }
 
 func chargePayment(client *http.Client, paymentURL string, event Event) error {
@@ -499,6 +527,52 @@ func confirmOrder(client *http.Client, orderURL string, event Event) error {
 	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("order status request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf(
+			"order service returned %d: %s",
+			resp.StatusCode,
+			string(respBody),
+		)
+	}
+
+	return nil
+}
+
+func cancelOrder(client *http.Client, orderURL string, event Event) error {
+	orderID, ok := event.Payload["order_id"].(float64)
+	if !ok {
+		return fmt.Errorf("missing or invalid order_id")
+	}
+
+	body := map[string]interface{}{
+		"order_id":   int(orderID),
+		"new_status": "cancelled",
+	}
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("failed to marshal order status request: %w", err)
+	}
+
+	req, err := http.NewRequest(
+		http.MethodPut,
+		orderURL+"/status",
+		bytes.NewBuffer(data),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create order cancellation request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("order cancellation request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
