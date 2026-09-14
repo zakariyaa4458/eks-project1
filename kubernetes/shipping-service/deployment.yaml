@@ -35,7 +35,7 @@ spec:
       serviceAccountName: shipping-service-service-account
       containers:
       - name: shipping-service
-        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/shipping-service:d3871de576a145717a665667415a7488143a2ec0-33
+        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/shipping-service:f6dc44568ff97295cff8dabaa537444afe36f010-68
         imagePullPolicy: Always
         securityContext:
             runAsNonRoot: true

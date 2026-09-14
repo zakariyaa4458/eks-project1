@@ -3,193 +3,1130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Platform</title>
+    <title>Order Fulfillment Platform</title>
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e1e4e8; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        h1 { font-size: 1.5rem; margin-bottom: 24px; color: #fff; }
-        h2 { font-size: 1.1rem; margin-bottom: 12px; color: #8b949e; font-weight: 500; }
+        :root {
+            --bg: #0b0f14;
+            --surface: #111720;
+            --surface-soft: #151c26;
+            --surface-hover: #1a2330;
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 32px; }
-        .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; }
-        .card-label { font-size: 0.8rem; color: #8b949e; text-transform: uppercase; letter-spacing: 0.05em; }
-        .card-value { font-size: 2rem; font-weight: 600; margin-top: 4px; }
-        .card-value.green { color: #3fb950; }
-        .card-value.blue { color: #58a6ff; }
-        .card-value.orange { color: #d29922; }
-        .card-value.red { color: #f85149; }
+            --border: #263140;
+            --border-soft: #1e2835;
 
-        .section { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+            --text: #f3f6fa;
+            --text-secondary: #a4afbd;
+            --text-muted: #6f7c8c;
 
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 8px 12px; font-size: 0.75rem; color: #8b949e; text-transform: uppercase; border-bottom: 1px solid #30363d; }
-        td { padding: 10px 12px; border-bottom: 1px solid #21262d; font-size: 0.9rem; }
-        tr:hover { background: #1c2128; }
+            --blue: #4c8dff;
+            --blue-hover: #6aa0ff;
 
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; }
-        .badge-pending { background: #d29922; color: #0f1117; }
-        .badge-confirmed { background: #58a6ff; color: #0f1117; }
-        .badge-processing { background: #bc8cff; color: #0f1117; }
-        .badge-shipped { background: #3fb950; color: #0f1117; }
-        .badge-delivered { background: #238636; color: #fff; }
-        .badge-cancelled { background: #f85149; color: #fff; }
+            --green: #35c46a;
+            --green-soft: rgba(53, 196, 106, 0.12);
 
-        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
-        .btn-primary { background: #238636; color: #fff; }
-        .btn-primary:hover { background: #2ea043; }
-        .btn-sm { padding: 4px 10px; font-size: 0.75rem; }
-        .btn-blue { background: #1f6feb; color: #fff; }
-        .btn-orange { background: #9e6a03; color: #fff; }
+            --red: #f45b69;
+            --red-soft: rgba(244, 91, 105, 0.12);
 
-        .form-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-        .form-row input, .form-row select { padding: 8px 12px; border: 1px solid #30363d; border-radius: 6px; background: #0d1117; color: #e1e4e8; font-size: 0.85rem; }
-        .form-row input { flex: 1; min-width: 120px; }
+            --orange: #f2ae3d;
+            --orange-soft: rgba(242, 174, 61, 0.12);
 
-        .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid #30363d; padding-bottom: 8px; }
-        .tab { padding: 8px 16px; border-radius: 6px 6px 0 0; cursor: pointer; font-size: 0.85rem; color: #8b949e; }
-        .tab.active { color: #fff; border-bottom: 2px solid #58a6ff; }
-        .tab:hover { color: #e1e4e8; }
+            --purple: #a678f4;
+            --purple-soft: rgba(166, 120, 244, 0.12);
 
-        .panel { display: none; }
-        .panel.active { display: block; }
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
 
-        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
-        .service-card { padding: 12px; border-radius: 6px; border: 1px solid #30363d; display: flex; justify-content: space-between; align-items: center; }
-        .service-name { font-size: 0.85rem; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; }
-        .dot-green { background: #3fb950; }
-        .dot-red { background: #f85149; }
-        .dot-grey { background: #484f58; }
+            --shadow:
+                0 1px 2px rgba(0, 0, 0, 0.2),
+                0 8px 24px rgba(0, 0, 0, 0.12);
+        }
 
-        .refresh { float: right; font-size: 0.8rem; color: #8b949e; cursor: pointer; }
-        .refresh:hover { color: #e1e4e8; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        #toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; border-radius: 6px; background: #238636; color: #fff; font-size: 0.85rem; display: none; z-index: 100; }
-        #toast.error { background: #f85149; }
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family:
+                Inter,
+                ui-sans-serif,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+            background:
+                radial-gradient(circle at top right, rgba(76, 141, 255, 0.06), transparent 28%),
+                var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        button,
+        input,
+        select {
+            font: inherit;
+        }
+
+        button {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .app-shell {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 28px 48px;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .topbar {
+            min-height: 86px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            border-bottom: 1px solid var(--border-soft);
+            margin-bottom: 30px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--blue),
+                    #6d65ff
+                );
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            font-size: 1rem;
+            color: white;
+            box-shadow: 0 8px 20px rgba(76, 141, 255, 0.25);
+        }
+
+        .brand-copy h1 {
+            font-size: 1.08rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-copy p {
+            margin-top: 2px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .environment-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: 999px;
+            padding: 7px 12px;
+            font-size: 0.77rem;
+            color: var(--text-secondary);
+        }
+
+        .environment-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 0 4px rgba(53, 196, 106, 0.1);
+        }
+
+        .refresh-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 8px 13px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-secondary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: 0.18s ease;
+        }
+
+        .refresh-button:hover {
+            border-color: #3a4a5f;
+            color: var(--text);
+            background: var(--surface-soft);
+        }
+
+        /* =========================
+           PAGE INTRO
+        ========================= */
+
+        .page-heading {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .page-heading h2 {
+            font-size: 1.55rem;
+            letter-spacing: -0.035em;
+            font-weight: 700;
+        }
+
+        .page-heading p {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            margin-top: 4px;
+        }
+
+        /* =========================
+           METRICS
+        ========================= */
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .metric-card {
+            background:
+                linear-gradient(
+                    180deg,
+                    rgba(255, 255, 255, 0.015),
+                    transparent
+                ),
+                var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 19px;
+            min-height: 126px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 18px;
+            right: 18px;
+            height: 1px;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .metric-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .metric-value {
+            margin-top: 13px;
+            font-size: 2rem;
+            font-weight: 720;
+            letter-spacing: -0.05em;
+        }
+
+        .metric-footer {
+            color: var(--text-muted);
+            font-size: 0.73rem;
+            margin-top: 6px;
+        }
+
+        .blue { color: var(--blue); }
+        .green { color: var(--green); }
+        .orange { color: var(--orange); }
+        .red { color: var(--red); }
+
+        /* =========================
+           NAVIGATION
+        ========================= */
+
+        .tabs-shell {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: rgba(11, 15, 20, 0.92);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border-soft);
+            margin-bottom: 24px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            padding: 8px 0;
+        }
+
+        .tab {
+            border: 0;
+            background: transparent;
+            color: var(--text-muted);
+            padding: 9px 13px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.84rem;
+            font-weight: 550;
+            white-space: nowrap;
+            transition: 0.18s ease;
+        }
+
+        .tab:hover {
+            color: var(--text);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .tab.active {
+            color: #fff;
+            background: rgba(76, 141, 255, 0.12);
+            box-shadow: inset 0 0 0 1px rgba(76, 141, 255, 0.16);
+        }
+
+        /* =========================
+           PANELS / SECTIONS
+        ========================= */
+
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .section {
+            background:
+                linear-gradient(
+                    180deg,
+                    rgba(255,255,255,0.015),
+                    transparent 120px
+                ),
+                var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            margin-bottom: 18px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .section-header {
+            padding: 20px 22px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .section-header h3 {
+            font-size: 1rem;
+            font-weight: 650;
+            letter-spacing: -0.02em;
+        }
+
+        .section-header p {
+            font-size: 0.77rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .section-content {
+            padding: 0 22px 22px;
+        }
+
+        /* =========================
+           FORMS
+        ========================= */
+
+        .form-row {
+            display: grid;
+            grid-template-columns:
+                minmax(240px, 1.4fr)
+                minmax(90px, 0.35fr)
+                minmax(110px, 0.4fr)
+                auto;
+            gap: 10px;
+        }
+
+        .inventory-form {
+            grid-template-columns:
+                repeat(3, minmax(140px, 1fr))
+                120px
+                100px
+                auto;
+        }
+
+        input,
+        select {
+            width: 100%;
+            height: 42px;
+            padding: 0 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: #0d131b;
+            color: var(--text);
+            outline: none;
+            transition: 0.18s ease;
+        }
+
+        input::placeholder {
+            color: #596779;
+        }
+
+        input:hover,
+        select:hover {
+            border-color: #344357;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(76, 141, 255, 0.10);
+        }
+
+        .btn {
+            height: 42px;
+            border: 0;
+            border-radius: var(--radius-sm);
+            padding: 0 15px;
+            cursor: pointer;
+            font-weight: 650;
+            font-size: 0.82rem;
+            transition: 0.18s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: var(--blue);
+            color: white;
+            box-shadow: 0 6px 16px rgba(76, 141, 255, 0.18);
+        }
+
+        .btn-primary:hover {
+            background: var(--blue-hover);
+        }
+
+        .btn-sm {
+            height: 30px;
+            padding: 0 10px;
+            font-size: 0.72rem;
+        }
+
+        .btn-blue {
+            color: #d8e7ff;
+            background: rgba(76, 141, 255, 0.16);
+            border: 1px solid rgba(76, 141, 255, 0.2);
+        }
+
+        .btn-blue:hover {
+            background: rgba(76, 141, 255, 0.23);
+        }
+
+        .btn-orange {
+            color: #ffd99d;
+            background: rgba(242, 174, 61, 0.12);
+            border: 1px solid rgba(242, 174, 61, 0.18);
+        }
+
+        .btn-orange:hover {
+            background: rgba(242, 174, 61, 0.2);
+        }
+
+        /* =========================
+           TABLES
+        ========================= */
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-top: 1px solid var(--border-soft);
+        }
+
+        table {
+            width: 100%;
+            min-width: 820px;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px 15px;
+            font-size: 0.67rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.075em;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.012);
+            border-bottom: 1px solid var(--border-soft);
+        }
+
+        td {
+            padding: 13px 15px;
+            font-size: 0.81rem;
+            color: #dbe2ea;
+            border-bottom: 1px solid var(--border-soft);
+            vertical-align: middle;
+        }
+
+        tbody tr {
+            transition: background 0.15s ease;
+        }
+
+        tbody tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        /* =========================
+           BADGES
+        ========================= */
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 24px;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            font-weight: 650;
+            line-height: 1;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+
+        .badge-pending,
+        .badge-label_created {
+            background: var(--orange-soft);
+            color: #ffc968;
+            border-color: rgba(242, 174, 61, 0.15);
+        }
+
+        .badge-confirmed {
+            background: rgba(76, 141, 255, 0.12);
+            color: #84b4ff;
+            border-color: rgba(76, 141, 255, 0.16);
+        }
+
+        .badge-processing {
+            background: var(--purple-soft);
+            color: #c5a5ff;
+            border-color: rgba(166, 120, 244, 0.16);
+        }
+
+        .badge-shipped,
+        .badge-in_transit {
+            background: rgba(76, 141, 255, 0.12);
+            color: #8eb9ff;
+            border-color: rgba(76, 141, 255, 0.16);
+        }
+
+        .badge-delivered,
+        .badge-sent,
+        .badge-completed {
+            background: var(--green-soft);
+            color: #66da8e;
+            border-color: rgba(53, 196, 106, 0.16);
+        }
+
+        .badge-cancelled,
+        .badge-failed,
+        .badge-refunded {
+            background: var(--red-soft);
+            color: #ff8490;
+            border-color: rgba(244, 91, 105, 0.16);
+        }
+
+        .badge-partially_refunded {
+            background: var(--orange-soft);
+            color: #ffc968;
+        }
+
+        /* =========================
+           SERVICES
+        ========================= */
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 12px;
+        }
+
+        .service-card {
+            min-height: 70px;
+            padding: 14px 15px;
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius-md);
+            background: #0e141c;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.18s ease;
+        }
+
+        .service-card:hover {
+            border-color: var(--border);
+            background: #111923;
+        }
+
+        .service-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .service-name {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .service-meta {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+        }
+
+        .service-status {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .dot-green {
+            background: var(--green);
+            box-shadow: 0 0 0 4px rgba(53, 196, 106, 0.08);
+        }
+
+        .dot-red {
+            background: var(--red);
+            box-shadow: 0 0 0 4px rgba(244, 91, 105, 0.08);
+        }
+
+        .dot-grey {
+            background: #536172;
+        }
+
+        /* =========================
+           OVERVIEW / EMPTY STATES
+        ========================= */
+
+        .overview-content {
+            padding: 5px 0;
+        }
+
+        .muted {
+            color: var(--text-muted);
+        }
+
+        .empty-state {
+            padding: 30px 15px !important;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* =========================
+           TOAST
+        ========================= */
+
+        #toast {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            z-index: 100;
+            min-width: 240px;
+            max-width: 380px;
+            padding: 13px 16px;
+            border-radius: var(--radius-md);
+            background: #18271f;
+            border: 1px solid rgba(53, 196, 106, 0.25);
+            color: #b9f3ca;
+            box-shadow: 0 14px 40px rgba(0,0,0,0.32);
+            font-size: 0.8rem;
+            font-weight: 550;
+            display: none;
+        }
+
+        #toast.error {
+            background: #2b171b;
+            border-color: rgba(244, 91, 105, 0.25);
+            color: #ffc0c6;
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 1150px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .form-row,
+            .inventory-form {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 720px) {
+            .app-shell {
+                padding: 0 16px 32px;
+            }
+
+            .topbar {
+                align-items: flex-start;
+                padding: 18px 0;
+                min-height: auto;
+                flex-direction: column;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .page-heading {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .form-row,
+            .inventory-form {
+                grid-template-columns: 1fr;
+            }
+
+            .section-header,
+            .section-content {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>Order Fulfillment Platform <span class="refresh" onclick="refreshAll()">refresh</span></h1>
 
-        <div class="grid" id="stats"></div>
+<div class="app-shell">
 
-        <div class="tabs">
-            <div class="tab active" onclick="showTab('orders')">Orders</div>
-            <div class="tab" onclick="showTab('inventory')">Inventory</div>
-            <div class="tab" onclick="showTab('payments')">Payments</div>
-            <div class="tab" onclick="showTab('shipping')">Shipping</div>
-            <div class="tab" onclick="showTab('notifications')">Notifications</div>
-            <div class="tab" onclick="showTab('services')">Services</div>
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-mark">OF</div>
+
+            <div class="brand-copy">
+                <h1>Order Fulfillment</h1>
+                <p>Operations Dashboard</p>
+            </div>
         </div>
 
-        <!-- Orders -->
-        <div class="panel active" id="panel-orders">
-            <div class="section">
-                <h2>Create Order</h2>
-                <div class="form-row">
-                    <input type="text" id="order-product" placeholder="Product ID (e.g. kb-001)">
-                    <input type="number" id="order-qty" placeholder="Qty" value="1" min="1" style="max-width:80px">
-                    <input type="number" id="order-price" placeholder="Price" step="0.01" style="max-width:100px">
-                    <button class="btn btn-primary" onclick="createOrder()">Place Order</button>
+        <div class="header-actions">
+            <div class="environment-badge">
+                <span class="environment-dot"></span>
+                Production
+            </div>
+
+            <button class="refresh-button" onclick="refreshAll()">
+                ↻ Refresh
+            </button>
+        </div>
+    </header>
+
+    <div class="page-heading">
+        <div>
+            <h2>Overview</h2>
+            <p>Monitor orders, inventory, payments and fulfillment activity.</p>
+        </div>
+    </div>
+
+    <div class="stats-grid" id="stats"></div>
+
+    <div class="tabs-shell">
+        <div class="tabs">
+            <button class="tab active" onclick="showTab(event, 'orders')">Orders</button>
+            <button class="tab" onclick="showTab(event, 'inventory')">Inventory</button>
+            <button class="tab" onclick="showTab(event, 'payments')">Payments</button>
+            <button class="tab" onclick="showTab(event, 'shipping')">Shipping</button>
+            <button class="tab" onclick="showTab(event, 'notifications')">Notifications</button>
+            <button class="tab" onclick="showTab(event, 'services')">Services</button>
+        </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="panel active" id="panel-orders">
+
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h3>Create Order</h3>
+                    <p>Create a new fulfillment request.</p>
                 </div>
             </div>
-            <div class="section">
-                <h2>Orders</h2>
+
+            <div class="section-content">
+                <div class="form-row">
+                    <input
+                        type="text"
+                        id="order-product"
+                        placeholder="Product ID e.g. kb-001"
+                    >
+
+                    <input
+                        type="number"
+                        id="order-qty"
+                        placeholder="Quantity"
+                        value="1"
+                        min="1"
+                    >
+
+                    <input
+                        type="number"
+                        id="order-price"
+                        placeholder="Price"
+                        step="0.01"
+                    >
+
+                    <button
+                        class="btn btn-primary"
+                        onclick="createOrder()"
+                    >
+                        Place Order
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h3>Orders</h3>
+                    <p>Recent customer orders and fulfillment status.</p>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Customer</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+
                     <tbody id="orders-table"></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Inventory -->
-        <div class="panel" id="panel-inventory">
-            <div class="section">
-                <h2>Add Product</h2>
-                <div class="form-row">
-                    <input type="text" id="prod-id" placeholder="Product ID">
-                    <input type="text" id="prod-name" placeholder="Name">
-                    <input type="text" id="prod-sku" placeholder="SKU">
-                    <input type="number" id="prod-price" placeholder="Price" step="0.01" style="max-width:100px">
-                    <input type="number" id="prod-stock" placeholder="Stock" style="max-width:80px">
-                    <button class="btn btn-primary" onclick="addProduct()">Add</button>
+    </div>
+
+    <!-- INVENTORY -->
+    <div class="panel" id="panel-inventory">
+
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h3>Add Product</h3>
+                    <p>Add inventory to the fulfillment catalogue.</p>
                 </div>
             </div>
-            <div class="section">
-                <h2>Products</h2>
+
+            <div class="section-content">
+                <div class="form-row inventory-form">
+
+                    <input
+                        type="text"
+                        id="prod-id"
+                        placeholder="Product ID"
+                    >
+
+                    <input
+                        type="text"
+                        id="prod-name"
+                        placeholder="Product name"
+                    >
+
+                    <input
+                        type="text"
+                        id="prod-sku"
+                        placeholder="SKU"
+                    >
+
+                    <input
+                        type="number"
+                        id="prod-price"
+                        placeholder="Price"
+                        step="0.01"
+                    >
+
+                    <input
+                        type="number"
+                        id="prod-stock"
+                        placeholder="Stock"
+                    >
+
+                    <button
+                        class="btn btn-primary"
+                        onclick="addProduct()"
+                    >
+                        Add Product
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h3>Inventory</h3>
+                    <p>Current products, reservations and availability.</p>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>ID</th><th>Name</th><th>SKU</th><th>Price</th><th>Stock</th><th>Reserved</th><th>Available</th></tr></thead>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>SKU</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Reserved</th>
+                        <th>Available</th>
+                    </tr>
+                    </thead>
+
                     <tbody id="inventory-table"></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Payments -->
-        <div class="panel" id="panel-payments">
-            <div class="section">
-                <h2>Revenue</h2>
+    </div>
+
+    <!-- PAYMENTS -->
+    <div class="panel" id="panel-payments">
+
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h3>Revenue</h3>
+                    <p>Payment activity across the platform.</p>
+                </div>
+            </div>
+
+            <div class="section-content">
                 <div id="revenue-info"></div>
             </div>
-            <div class="section">
-                <h2>Ledger</h2>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h3>Payment Ledger</h3>
+                    <p>Recorded debit and credit activity.</p>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>Payment</th><th>Type</th><th>Debit</th><th>Credit</th><th>Description</th><th>Date</th></tr></thead>
+                    <thead>
+                    <tr>
+                        <th>Payment</th>
+                        <th>Type</th>
+                        <th>Debit</th>
+                        <th>Credit</th>
+                        <th>Description</th>
+                        <th>Date</th>
+                    </tr>
+                    </thead>
+
                     <tbody id="ledger-table"></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Shipping -->
-        <div class="panel" id="panel-shipping">
-            <div class="section">
-                <h2>Shipments</h2>
+    </div>
+
+    <!-- SHIPPING -->
+    <div class="panel" id="panel-shipping">
+
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h3>Shipments</h3>
+                    <p>Tracking information and carrier status.</p>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>ID</th><th>Order</th><th>Carrier</th><th>Tracking</th><th>Status</th><th>Recipient</th></tr></thead>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Order</th>
+                        <th>Carrier</th>
+                        <th>Tracking</th>
+                        <th>Status</th>
+                        <th>Recipient</th>
+                    </tr>
+                    </thead>
+
                     <tbody id="shipping-table"></tbody>
                 </table>
             </div>
-            <div class="section">
-                <h2>Overview</h2>
-                <div id="shipping-overview"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h3>Shipping Overview</h3>
+                    <p>Shipment distribution and delivery performance.</p>
+                </div>
+            </div>
+
+            <div class="section-content">
+                <div
+                    id="shipping-overview"
+                    class="overview-content"
+                ></div>
             </div>
         </div>
 
-        <!-- Notifications -->
-        <div class="panel" id="panel-notifications">
-            <div class="section">
-                <h2>Recent Notifications</h2>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="panel" id="panel-notifications">
+
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h3>Recent Notifications</h3>
+                    <p>Order and fulfillment messages sent to customers.</p>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>ID</th><th>Recipient</th><th>Channel</th><th>Template</th><th>Status</th><th>Sent</th></tr></thead>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Recipient</th>
+                        <th>Channel</th>
+                        <th>Template</th>
+                        <th>Status</th>
+                        <th>Sent</th>
+                    </tr>
+                    </thead>
+
                     <tbody id="notif-table"></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Services -->
-        <div class="panel" id="panel-services">
-            <div class="section">
-                <h2>Service Health</h2>
-                <div class="services-grid" id="services-grid"></div>
-            </div>
-        </div>
     </div>
 
-    <div id="toast"></div>
+    <!-- SERVICES -->
+    <div class="panel" id="panel-services">
 
-    <script>
-        const API = 'https://api.ecommerce.zakariyaalab.com';
-        let token = localStorage.getItem('token') || '';
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h3>Service Health</h3>
+                    <p>Live availability across platform microservices.</p>
+                </div>
+            </div>
+
+            <div class="section-content">
+                <div
+                    class="services-grid"
+                    id="services-grid"
+                ></div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+
+const API = 'https://api.ecommerce.zakariyaalab.com';
+
+let token = localStorage.getItem('token') || '';
 
 async function ensureAuth() {
+
     if (token) {
         return;
     }
 
     const r = await fetch(API + '/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+
+        headers: {
+            'Content-Type': 'application/json'
+        },
+
         body: JSON.stringify({
             email: 'admin@platform.local',
             password: 'admin'
@@ -203,267 +1140,1310 @@ async function ensureAuth() {
     const d = await r.json();
 
     token = d.token;
+
     localStorage.setItem('token', token);
 }
 
-        function headers() {
-            return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+function headers() {
+
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+    };
+
+}
+
+function toast(msg, error) {
+
+    const t = document.getElementById('toast');
+
+    t.textContent = msg;
+
+    t.className = error ? 'error' : '';
+
+    t.style.display = 'block';
+
+    setTimeout(() => {
+        t.style.display = 'none';
+    }, 3000);
+
+}
+
+function showTab(event, name) {
+
+    document
+        .querySelectorAll('.tab')
+        .forEach(t => t.classList.remove('active'));
+
+    document
+        .querySelectorAll('.panel')
+        .forEach(p => p.classList.remove('active'));
+
+    event.currentTarget.classList.add('active');
+
+    document
+        .getElementById('panel-' + name)
+        .classList.add('active');
+
+    refreshAll();
+}
+
+function prettyText(value) {
+
+    if (!value) {
+        return '-';
+    }
+
+    return value
+        .replaceAll('_', ' ')
+        .replace(/\b\w/g, c => c.toUpperCase());
+
+}
+
+function badge(status) {
+
+    return `
+        <span class="badge badge-${status}">
+            ${prettyText(status)}
+        </span>
+    `;
+
+}
+
+function ts(s) {
+
+    if (!s) {
+        return '-';
+    }
+
+    return new Date(s).toLocaleString(
+        'en-GB',
+        {
+            day: '2-digit',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit'
         }
+    );
 
-        function toast(msg, error) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.className = error ? 'error' : '';
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 3000);
-        }
+}
 
-        function showTab(name) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById('panel-' + name).classList.add('active');
-            refreshAll();
-        }
+function money(n) {
 
-        function badge(status) {
-            return `<span class="badge badge-${status}">${status}</span>`;
-        }
+    return '£' + Number(n || 0).toFixed(2);
 
-        function ts(s) {
-            if (!s) return '-';
-            return new Date(s).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-        }
+}
 
-        function money(n) { return '£' + Number(n || 0).toFixed(2); }
+/* =========================
+   STATS
+========================= */
 
-        // --- Stats ---
-        async function loadStats() {
-            try {
-                const r = await fetch(API + '/dashboard/summary', {
+async function loadStats() {
+
+    try {
+
+        const r = await fetch(
+            API + '/dashboard/summary',
+            {
                 headers: headers()
-                 });
-                const d = await r.json();
-                document.getElementById('stats').innerHTML = `
-                    <div class="card"><div class="card-label">Total Orders</div><div class="card-value blue">${d.orders?.total || 0}</div></div>
-                    <div class="card"><div class="card-label">Today's Orders</div><div class="card-value green">${d.orders?.today || 0}</div></div>
-                    <div class="card"><div class="card-label">Revenue</div><div class="card-value green">${money(d.revenue?.total)}</div></div>
-                    <div class="card"><div class="card-label">Low Stock Alerts</div><div class="card-value ${d.inventory?.low_stock > 0 ? 'red' : 'green'}">${d.inventory?.low_stock || 0}</div></div>
-                    <div class="card"><div class="card-label">Active Shipments</div><div class="card-value orange">${d.shipping?.active_shipments || 0}</div></div>
-                `;
-            } catch(e) { console.error('Stats error', e); }
-        }
-
-        // --- Orders ---
-        async function loadOrders() {
-            try {
-                const r = await fetch(API + '/api/orders/', { headers: headers() });
-                const orders = await r.json();
-                const tbody = document.getElementById('orders-table');
-                if (!orders || !orders.length) { tbody.innerHTML = '<tr><td colspan="7" style="color:#8b949e">No orders yet</td></tr>'; return; }
-                tbody.innerHTML = orders.map(o => {
-                    const items = (typeof o.items === 'string' ? JSON.parse(o.items) : o.items) || [];
-                    const itemStr = items.map(i => `${i.product_id} x${i.quantity}`).join(', ');
-                    let actions = '';
-                    const next = { pending: 'confirmed', confirmed: 'processing', processing: 'shipped', shipped: 'delivered' };
-                    if (next[o.status]) {
-                        actions = `<button class="btn btn-sm btn-blue" onclick="advanceOrder(${o.id},'${next[o.status]}')">${next[o.status]}</button>`;
-                    }
-                    if (['pending','confirmed','processing'].includes(o.status)) {
-                        actions += ` <button class="btn btn-sm btn-orange" onclick="advanceOrder(${o.id},'cancelled')">cancel</button>`;
-                    }
-                    return `<tr><td>${o.id}</td><td>${o.customer_id}</td><td>${itemStr}</td><td>${money(o.total)}</td><td>${badge(o.status)}</td><td>${ts(o.created_at)}</td><td>${actions}</td></tr>`;
-                }).join('');
-            } catch(e) { console.error('Orders error', e); }
-        }
-
-         async function createOrder() {
-            const product = document.getElementById('order-product').value;
-            const qty = parseInt(document.getElementById('order-qty').value) || 1;
-            const price = parseFloat(document.getElementById('order-price').value) || 0;
-            if (!product || !price) { toast('Fill in product, qty and price', true); return; }
-
-            try {
-                const r = await fetch(API + '/api/orders/', {
-                    method: 'POST', headers: headers(),
-                    body: JSON.stringify({ items: [{ product_id: product, quantity: qty, price: price }] })
-                });
-                const d = await r.json();
-                if (r.ok) { toast('Order #' + d.id + ' created'); refreshAll(); }
-                else { toast(d.error || 'Failed', true); }
-            } catch(e) { toast('Error creating order', true); }
-        }
-
-        async function advanceOrder(id, status) {
-            try {
-                const r = await fetch(API + '/api/orders/status', {
-                    method: 'PUT', headers: headers(),
-                    body: JSON.stringify({ order_id: id, new_status: status })
-                });
-                if (r.ok) { toast(`Order #${id} -> ${status}`); refreshAll(); }
-                else { const d = await r.json(); toast(d.error || 'Failed', true); }
-            } catch(e) { toast('Error updating order', true); }
-        }
-
-        // --- Inventory ---
-        async function loadInventory() {
-            try {
-                const r = await fetch(API + '/api/inventory/products', { headers: headers() });
-                const products = await r.json();
-                const tbody = document.getElementById('inventory-table');
-                if (!products || !products.length) { tbody.innerHTML = '<tr><td colspan="7" style="color:#8b949e">No products yet</td></tr>'; return; }
-                tbody.innerHTML = products.map(p => {
-                    const avail = p.available ?? (p.stock - p.reserved);
-                    const color = avail < 10 ? 'color:#f85149' : '';
-                    return `<tr><td>${p.id}</td><td>${p.name}</td><td>${p.sku}</td><td>${money(p.price)}</td><td>${p.stock}</td><td>${p.reserved}</td><td style="${color}">${avail}</td></tr>`;
-                }).join('');
-            } catch(e) { console.error('Inventory error', e); }
-        }
-
-        async function addProduct() {
-            const data = {
-                id: document.getElementById('prod-id').value,
-                name: document.getElementById('prod-name').value,
-                sku: document.getElementById('prod-sku').value,
-                price: parseFloat(document.getElementById('prod-price').value) || 0,
-                stock: parseInt(document.getElementById('prod-stock').value) || 0
-            };
-            if (!data.id || !data.name) { toast('Fill in product details', true); return; }
-            try {
-                const r = await fetch(API + '/api/inventory/products', {
-                    method: 'POST', headers: headers(),
-                    body: JSON.stringify(data)
-                });
-                if (r.ok) { toast('Product added'); refreshAll(); }
-                else { const d = await r.json(); toast(d.error || 'Failed', true); }
-            } catch(e) { toast('Error adding product', true); }
-        }
-
-        // --- Payments ---
-        async function loadPayments() {
-            try {
-                const r = await fetch(API + '/dashboard/revenue', {
-                  headers: headers()
-                });
-                const d = await r.json();
-                document.getElementById('revenue-info').innerHTML = `
-                    <div class="grid">
-                        <div class="card"><div class="card-label">Total Revenue</div><div class="card-value green">${money(d.total)}</div></div>
-                        <div class="card"><div class="card-label">Refunded</div><div class="card-value red">${money(d.refunded)}</div></div>
-                        <div class="card"><div class="card-label">Net</div><div class="card-value blue">${money(d.net)}</div></div>
-                    </div>
-                `;
-            } catch(e) {}
-
-            try {
-                const r = await fetch(API + '/api/payments/ledger', { headers: headers() });
-                const entries = await r.json();
-                const tbody = document.getElementById('ledger-table');
-                if (!entries || !entries.length) { tbody.innerHTML = '<tr><td colspan="6" style="color:#8b949e">No entries</td></tr>'; return; }
-                tbody.innerHTML = entries.map(e => 
-                    `<tr><td style="font-size:0.75rem">${e.payment_id}</td><td>${badge(e.entry_type)}</td><td>${e.debit > 0 ? money(e.debit) : '-'}</td><td>${e.credit > 0 ? money(e.credit) : '-'}</td><td>${e.description}</td><td>${ts(e.created_at)}</td></tr>`
-                ).join('');
-            } catch(e) {}
-        }
-
-        // --- Shipping ---
-        async function loadShipping() {
-            try {
-                const r = await fetch(API + '/api/shipping/shipments', { headers: headers() });
-                const shipments = await r.json();
-                const tbody = document.getElementById('shipping-table');
-                if (!shipments || !shipments.length) { tbody.innerHTML = '<tr><td colspan="6" style="color:#8b949e">No shipments</td></tr>'; return; }
-                tbody.innerHTML = shipments.map(s =>
-                    `<tr><td>${s.id}</td><td>${s.order_id}</td><td>${s.carrier}</td><td>${s.tracking_number || '-'}</td><td>${badge(s.status)}</td><td>${s.recipient_name}</td></tr>`
-                ).join('');
-            } catch(e) {}
-
-            try {
-                const r = await fetch(API + '/dashboard/shipping/overview', {
-                headers: headers()
-                });
-                const d = await r.json();
-                const statuses = Object.entries(d.by_status || {}).map(([k,v]) => `${badge(k)} ${v}`).join('&nbsp;&nbsp;');
-                const carriers = Object.entries(d.by_carrier || {}).map(([k,v]) => `${k}: ${v}`).join(', ');
-                document.getElementById('shipping-overview').innerHTML = `
-                    <p style="margin-bottom:8px">${statuses || 'No shipments'}</p>
-                    <p style="color:#8b949e;font-size:0.85rem">Carriers: ${carriers || '-'} | Avg delivery: ${(d.avg_delivery_hours || 0).toFixed(1)}h</p>
-                `;
-            } catch(e) {}
-        }
-
-        // --- Notifications ---
-        async function loadNotifications() {
-            try {
-                const r = await fetch(API + '/api/notifications/history', { headers: headers() });
-                const notifs = await r.json();
-                const tbody = document.getElementById('notif-table');
-                if (!notifs || !notifs.length) { tbody.innerHTML = '<tr><td colspan="6" style="color:#8b949e">No notifications</td></tr>'; return; }
-                tbody.innerHTML = notifs.map(n =>
-                    `<tr><td>${n.id}</td><td>${n.recipient}</td><td>${n.channel}</td><td>${n.template}</td><td>${badge(n.status)}</td><td>${ts(n.sent_at || n.created_at)}</td></tr>`
-                ).join('');
-            } catch(e) {}
-        }
-
-        // --- Services ---
-        async function loadServices() {
-            const services = [
-                { name: 'api-gateway', url: '/healthz' },
-                { name: 'order-service', url: '/api/orders/healthz' },
-                { name: 'inventory-service', url: '/api/inventory/healthz' },
-                { name: 'payment-service', url: '/api/payments/healthz' },
-                { name: 'notification-service', url: '/api/notifications/healthz' },
-                { name: 'shipping-service', url: '/api/shipping/healthz' },
-                { name: 'dashboard-api', url: '/dashboard/healthz' },
-            ];
-
-            const grid = document.getElementById('services-grid');
-            grid.innerHTML = services.map(s => 
-                `<div class="service-card" id="svc-${s.name}"><span class="service-name">${s.name}</span><span class="dot dot-grey"></span></div>`
-            ).join('');
-
-            for (const s of services) {
-                try {
-                    const r = await fetch(API + s.url, { signal: AbortSignal.timeout(3000) });
-                    const d = await r.json();
-                    const el = document.getElementById('svc-' + s.name);
-                    const dot = el.querySelector('.dot');
-                    dot.className = d.status === 'ok' ? 'dot dot-green' : 'dot dot-red';
-                } catch(e) {
-                    const el = document.getElementById('svc-' + s.name);
-                    if (el) el.querySelector('.dot').className = 'dot dot-red';
-                }
             }
+        );
+
+        const d = await r.json();
+
+        document.getElementById('stats').innerHTML = `
+
+            <div class="metric-card">
+                <div class="metric-label">
+                    Total Orders
+                </div>
+
+                <div class="metric-value blue">
+                    ${d.orders?.total || 0}
+                </div>
+
+                <div class="metric-footer">
+                    Across all statuses
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">
+                    Today's Orders
+                </div>
+
+                <div class="metric-value green">
+                    ${d.orders?.today || 0}
+                </div>
+
+                <div class="metric-footer">
+                    Created today
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">
+                    Revenue
+                </div>
+
+                <div class="metric-value green">
+                    ${money(d.revenue?.total)}
+                </div>
+
+                <div class="metric-footer">
+                    Net platform revenue
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">
+                    Low Stock
+                </div>
+
+                <div class="metric-value ${
+                    d.inventory?.low_stock > 0
+                        ? 'red'
+                        : 'green'
+                }">
+                    ${d.inventory?.low_stock || 0}
+                </div>
+
+                <div class="metric-footer">
+                    Products requiring attention
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">
+                    Active Shipments
+                </div>
+
+                <div class="metric-value orange">
+                    ${d.shipping?.active_shipments || 0}
+                </div>
+
+                <div class="metric-footer">
+                    Currently in fulfillment
+                </div>
+            </div>
+
+        `;
+
+    } catch (e) {
+
+        console.error('Stats error', e);
+
+    }
+
+}
+
+/* =========================
+   ORDERS
+========================= */
+
+async function loadOrders() {
+
+    try {
+
+        const r = await fetch(
+            API + '/api/orders/',
+            {
+                headers: headers()
+            }
+        );
+
+        const orders = await r.json();
+
+        const tbody =
+            document.getElementById('orders-table');
+
+        if (!orders || !orders.length) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td
+                        colspan="7"
+                        class="empty-state"
+                    >
+                        No orders yet
+                    </td>
+                </tr>
+            `;
+
+            return;
         }
 
-        // --- Refresh ---
+        tbody.innerHTML = orders
+            .map(o => {
+
+                const items =
+                    (
+                        typeof o.items === 'string'
+                            ? JSON.parse(o.items)
+                            : o.items
+                    ) || [];
+
+                const itemStr =
+                    items
+                        .map(
+                            i =>
+                                `${i.product_id} × ${i.quantity}`
+                        )
+                        .join(', ');
+
+                let actions = '';
+
+                const next = {
+                    pending: 'confirmed',
+                    confirmed: 'processing',
+                    processing: 'shipped',
+                    shipped: 'delivered'
+                };
+
+                if (next[o.status]) {
+
+                    actions = `
+                        <button
+                            class="btn btn-sm btn-blue"
+                            onclick="
+                                advanceOrder(
+                                    ${o.id},
+                                    '${next[o.status]}'
+                                )
+                            "
+                        >
+                            ${prettyText(next[o.status])}
+                        </button>
+                    `;
+
+                }
+
+                if (
+                    [
+                        'pending',
+                        'confirmed',
+                        'processing'
+                    ].includes(o.status)
+                ) {
+
+                    actions += `
+                        <button
+                            class="btn btn-sm btn-orange"
+                            onclick="
+                                advanceOrder(
+                                    ${o.id},
+                                    'cancelled'
+                                )
+                            "
+                        >
+                            Cancel
+                        </button>
+                    `;
+
+                }
+
+                return `
+                    <tr>
+
+                        <td>
+                            #${o.id}
+                        </td>
+
+                        <td>
+                            ${o.customer_id}
+                        </td>
+
+                        <td>
+                            ${itemStr}
+                        </td>
+
+                        <td>
+                            ${money(o.total)}
+                        </td>
+
+                        <td>
+                            ${badge(o.status)}
+                        </td>
+
+                        <td>
+                            ${ts(o.created_at)}
+                        </td>
+
+                        <td>
+                            ${actions}
+                        </td>
+
+                    </tr>
+                `;
+
+            })
+            .join('');
+
+    } catch (e) {
+
+        console.error(
+            'Orders error',
+            e
+        );
+
+    }
+
+}
+
+async function createOrder() {
+
+    const product =
+        document.getElementById('order-product').value;
+
+    const qty =
+        parseInt(
+            document.getElementById('order-qty').value
+        ) || 1;
+
+    const price =
+        parseFloat(
+            document.getElementById('order-price').value
+        ) || 0;
+
+    if (!product || !price) {
+
+        toast(
+            'Fill in product, quantity and price',
+            true
+        );
+
+        return;
+
+    }
+
+    try {
+
+        const r = await fetch(
+            API + '/api/orders/',
+            {
+
+                method: 'POST',
+
+                headers: headers(),
+
+                body: JSON.stringify({
+                    items: [
+                        {
+                            product_id: product,
+                            quantity: qty,
+                            price: price
+                        }
+                    ]
+                })
+
+            }
+        );
+
+        const d = await r.json();
+
+        if (r.ok) {
+
+            toast(
+                'Order #' + d.id + ' created'
+            );
+
+            refreshAll();
+
+        } else {
+
+            toast(
+                d.error || 'Failed',
+                true
+            );
+
+        }
+
+    } catch (e) {
+
+        toast(
+            'Error creating order',
+            true
+        );
+
+    }
+
+}
+
+async function advanceOrder(id, status) {
+
+    try {
+
+        const r = await fetch(
+            API + '/api/orders/status',
+            {
+
+                method: 'PUT',
+
+                headers: headers(),
+
+                body: JSON.stringify({
+                    order_id: id,
+                    new_status: status
+                })
+
+            }
+        );
+
+        if (r.ok) {
+
+            toast(
+                `Order #${id} → ${prettyText(status)}`
+            );
+
+            refreshAll();
+
+        } else {
+
+            const d = await r.json();
+
+            toast(
+                d.error || 'Failed',
+                true
+            );
+
+        }
+
+    } catch (e) {
+
+        toast(
+            'Error updating order',
+            true
+        );
+
+    }
+
+}
+
+/* =========================
+   INVENTORY
+========================= */
+
+async function loadInventory() {
+
+    try {
+
+        const r = await fetch(
+            API + '/api/inventory/products',
+            {
+                headers: headers()
+            }
+        );
+
+        const products =
+            await r.json();
+
+        const tbody =
+            document.getElementById('inventory-table');
+
+        if (!products || !products.length) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td
+                        colspan="7"
+                        class="empty-state"
+                    >
+                        No inventory products
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+        tbody.innerHTML =
+            products
+                .map(p => {
+
+                    const avail =
+                        p.available ??
+                        (
+                            p.stock -
+                            p.reserved
+                        );
+
+                    const lowStock =
+                        avail < 10;
+
+                    return `
+                        <tr>
+
+                            <td>
+                                ${p.id}
+                            </td>
+
+                            <td>
+                                ${p.name}
+                            </td>
+
+                            <td>
+                                ${p.sku}
+                            </td>
+
+                            <td>
+                                ${money(p.price)}
+                            </td>
+
+                            <td>
+                                ${p.stock}
+                            </td>
+
+                            <td>
+                                ${p.reserved}
+                            </td>
+
+                            <td class="${lowStock ? 'red' : ''}">
+                                ${avail}
+                            </td>
+
+                        </tr>
+                    `;
+
+                })
+                .join('');
+
+    } catch (e) {
+
+        console.error(
+            'Inventory error',
+            e
+        );
+
+    }
+
+}
+
+async function addProduct() {
+
+    const data = {
+
+        id:
+            document.getElementById('prod-id').value,
+
+        name:
+            document.getElementById('prod-name').value,
+
+        sku:
+            document.getElementById('prod-sku').value,
+
+        price:
+            parseFloat(
+                document.getElementById('prod-price').value
+            ) || 0,
+
+        stock:
+            parseInt(
+                document.getElementById('prod-stock').value
+            ) || 0
+
+    };
+
+    if (
+        !data.id ||
+        !data.name
+    ) {
+
+        toast(
+            'Fill in product details',
+            true
+        );
+
+        return;
+
+    }
+
+    try {
+
+        const r = await fetch(
+            API + '/api/inventory/products',
+            {
+
+                method: 'POST',
+
+                headers: headers(),
+
+                body:
+                    JSON.stringify(data)
+
+            }
+        );
+
+        if (r.ok) {
+
+            toast(
+                'Product added'
+            );
+
+            refreshAll();
+
+        } else {
+
+            const d =
+                await r.json();
+
+            toast(
+                d.error || 'Failed',
+                true
+            );
+
+        }
+
+    } catch (e) {
+
+        toast(
+            'Error adding product',
+            true
+        );
+
+    }
+
+}
+
+/* =========================
+   PAYMENTS
+========================= */
+
+async function loadPayments() {
+
+    try {
+
+        const r = await fetch(
+            API + '/dashboard/revenue',
+            {
+                headers: headers()
+            }
+        );
+
+        const d =
+            await r.json();
+
+        document.getElementById(
+            'revenue-info'
+        ).innerHTML = `
+
+            <div class="stats-grid">
+
+                <div class="metric-card">
+
+                    <div class="metric-label">
+                        Total Revenue
+                    </div>
+
+                    <div class="metric-value green">
+                        ${money(d.total)}
+                    </div>
+
+                </div>
+
+                <div class="metric-card">
+
+                    <div class="metric-label">
+                        Refunded
+                    </div>
+
+                    <div class="metric-value red">
+                        ${money(d.refunded)}
+                    </div>
+
+                </div>
+
+                <div class="metric-card">
+
+                    <div class="metric-label">
+                        Net Revenue
+                    </div>
+
+                    <div class="metric-value blue">
+                        ${money(d.net)}
+                    </div>
+
+                </div>
+
+            </div>
+        `;
+
+    } catch (e) {
+
+        console.error(
+            'Revenue error',
+            e
+        );
+
+    }
+
+    try {
+
+        const r = await fetch(
+            API + '/api/payments/ledger',
+            {
+                headers: headers()
+            }
+        );
+
+        const entries =
+            await r.json();
+
+        const tbody =
+            document.getElementById('ledger-table');
+
+        if (!entries || !entries.length) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td
+                        colspan="6"
+                        class="empty-state"
+                    >
+                        No payment entries
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+        tbody.innerHTML =
+            entries
+                .map(e => `
+
+                    <tr>
+
+                        <td
+                            title="${e.payment_id}"
+                        >
+                            ${
+                                e.payment_id
+                                    ? e.payment_id.substring(0, 16) + '…'
+                                    : '-'
+                            }
+                        </td>
+
+                        <td>
+                            ${badge(e.entry_type)}
+                        </td>
+
+                        <td>
+                            ${
+                                e.debit > 0
+                                    ? money(e.debit)
+                                    : '-'
+                            }
+                        </td>
+
+                        <td>
+                            ${
+                                e.credit > 0
+                                    ? money(e.credit)
+                                    : '-'
+                            }
+                        </td>
+
+                        <td>
+                            ${e.description}
+                        </td>
+
+                        <td>
+                            ${ts(e.created_at)}
+                        </td>
+
+                    </tr>
+
+                `)
+                .join('');
+
+    } catch (e) {
+
+        console.error(
+            'Ledger error',
+            e
+        );
+
+    }
+
+}
+
+/* =========================
+   SHIPPING
+========================= */
+
+async function loadShipping() {
+
+    try {
+
+        const r = await fetch(
+            API + '/api/shipping/shipments',
+            {
+                headers: headers()
+            }
+        );
+
+        const shipments =
+            await r.json();
+
+        const tbody =
+            document.getElementById('shipping-table');
+
+        if (
+            !shipments ||
+            !shipments.length
+        ) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td
+                        colspan="6"
+                        class="empty-state"
+                    >
+                        No shipments
+                    </td>
+                </tr>
+            `;
+
+            return;
+
+        }
+
+        tbody.innerHTML =
+            shipments
+                .map(s => `
+
+                    <tr>
+
+                        <td>
+                            #${s.id}
+                        </td>
+
+                        <td>
+                            #${s.order_id}
+                        </td>
+
+                        <td>
+                            ${prettyText(s.carrier)}
+                        </td>
+
+                        <td
+                            title="${s.tracking_number || ''}"
+                        >
+                            ${
+                                s.tracking_number
+                                    ? s.tracking_number.substring(0, 18) + '…'
+                                    : '-'
+                            }
+                        </td>
+
+                        <td>
+                            ${badge(s.status)}
+                        </td>
+
+                        <td>
+                            ${s.recipient_name}
+                        </td>
+
+                    </tr>
+
+                `)
+                .join('');
+
+    } catch (e) {
+
+        console.error(
+            'Shipping error',
+            e
+        );
+
+    }
+
+    try {
+
+        const r = await fetch(
+            API + '/dashboard/shipping/overview',
+            {
+                headers: headers()
+            }
+        );
+
+        const d =
+            await r.json();
+
+        const statuses =
+            Object.entries(
+                d.by_status || {}
+            )
+                .map(
+                    ([k, v]) =>
+                        `${badge(k)} ${v}`
+                )
+                .join('&nbsp;&nbsp;');
+
+        const carriers =
+            Object.entries(
+                d.by_carrier || {}
+            )
+                .map(
+                    ([k, v]) =>
+                        `${prettyText(k)}: ${v}`
+                )
+                .join(', ');
+
+        document.getElementById(
+            'shipping-overview'
+        ).innerHTML = `
+
+            <div
+                style="
+                    display:flex;
+                    gap:12px;
+                    flex-wrap:wrap;
+                    margin-bottom:14px;
+                "
+            >
+                ${statuses || 'No shipments'}
+            </div>
+
+            <div
+                class="muted"
+                style="font-size:0.8rem"
+            >
+                Carriers:
+                ${carriers || '-'}
+                &nbsp;•&nbsp;
+                Average delivery:
+                ${
+                    (
+                        d.avg_delivery_hours ||
+                        0
+                    ).toFixed(1)
+                }h
+            </div>
+
+        `;
+
+    } catch (e) {
+
+        console.error(
+            'Shipping overview error',
+            e
+        );
+
+    }
+
+}
+
+/* =========================
+   NOTIFICATIONS
+========================= */
+
+async function loadNotifications() {
+
+    try {
+
+        const r = await fetch(
+            API + '/api/notifications/history',
+            {
+                headers: headers()
+            }
+        );
+
+        const notifs =
+            await r.json();
+
+        const tbody =
+            document.getElementById('notif-table');
+
+        if (
+            !notifs ||
+            !notifs.length
+        ) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td
+                        colspan="6"
+                        class="empty-state"
+                    >
+                        No notifications
+                    </td>
+                </tr>
+            `;
+
+            return;
+
+        }
+
+        tbody.innerHTML =
+            notifs
+                .map(n => `
+
+                    <tr>
+
+                        <td>
+                            #${n.id}
+                        </td>
+
+                        <td>
+                            ${n.recipient}
+                        </td>
+
+                        <td>
+                            ${prettyText(n.channel)}
+                        </td>
+
+                        <td>
+                            ${prettyText(n.template)}
+                        </td>
+
+                        <td>
+                            ${badge(n.status)}
+                        </td>
+
+                        <td>
+                            ${
+                                ts(
+                                    n.sent_at ||
+                                    n.created_at
+                                )
+                            }
+                        </td>
+
+                    </tr>
+
+                `)
+                .join('');
+
+    } catch (e) {
+
+        console.error(
+            'Notifications error',
+            e
+        );
+
+    }
+
+}
+
+/* =========================
+   SERVICES
+========================= */
+
+async function loadServices() {
+
+    const services = [
+
+        {
+            name: 'api-gateway',
+            label: 'API Gateway',
+            url: '/healthz'
+        },
+
+        {
+            name: 'order-service',
+            label: 'Order Service',
+            url: '/api/orders/healthz'
+        },
+
+        {
+            name: 'inventory-service',
+            label: 'Inventory Service',
+            url: '/api/inventory/healthz'
+        },
+
+        {
+            name: 'payment-service',
+            label: 'Payment Service',
+            url: '/api/payments/healthz'
+        },
+
+        {
+            name: 'notification-service',
+            label: 'Notification Service',
+            url: '/api/notifications/healthz'
+        },
+
+        {
+            name: 'shipping-service',
+            label: 'Shipping Service',
+            url: '/api/shipping/healthz'
+        },
+
+        {
+            name: 'dashboard-api',
+            label: 'Dashboard API',
+            url: '/dashboard/healthz'
+        }
+
+    ];
+
+    const grid =
+        document.getElementById('services-grid');
+
+    grid.innerHTML =
+        services
+            .map(s => `
+
+                <div
+                    class="service-card"
+                    id="svc-${s.name}"
+                >
+
+                    <div class="service-info">
+
+                        <span class="service-name">
+                            ${s.label}
+                        </span>
+
+                        <span class="service-meta">
+                            Kubernetes service
+                        </span>
+
+                    </div>
+
+                    <div class="service-status">
+
+                        <span
+                            class="dot dot-grey"
+                        ></span>
+
+                        <span class="status-text">
+                            Checking
+                        </span>
+
+                    </div>
+
+                </div>
+
+            `)
+            .join('');
+
+    for (const s of services) {
+
+        try {
+
+            const r =
+                await fetch(
+                    API + s.url,
+                    {
+                        signal:
+                            AbortSignal.timeout(
+                                3000
+                            )
+                    }
+                );
+
+            const d =
+                await r.json();
+
+            const el =
+                document.getElementById(
+                    'svc-' + s.name
+                );
+
+            const dot =
+                el.querySelector('.dot');
+
+            const statusText =
+                el.querySelector(
+                    '.status-text'
+                );
+
+            if (d.status === 'ok') {
+
+                dot.className =
+                    'dot dot-green';
+
+                statusText.textContent =
+                    'Healthy';
+
+            } else {
+
+                dot.className =
+                    'dot dot-red';
+
+                statusText.textContent =
+                    'Degraded';
+
+            }
+
+        } catch (e) {
+
+            const el =
+                document.getElementById(
+                    'svc-' + s.name
+                );
+
+            if (el) {
+
+                el.querySelector(
+                    '.dot'
+                ).className =
+                    'dot dot-red';
+
+                el.querySelector(
+                    '.status-text'
+                ).textContent =
+                    'Unavailable';
+
+            }
+
+        }
+
+    }
+
+}
+
+/* =========================
+   REFRESH
+========================= */
+
 function refreshAll() {
+
     loadStats();
+
     loadOrders();
+
     loadInventory();
+
     loadPayments();
+
     loadShipping();
+
     loadNotifications();
+
     loadServices();
+
 }
 
 async function init() {
+
     try {
-        // Wait until we have a JWT before making API requests
+
         await ensureAuth();
 
-        // Initial dashboard load
         refreshAll();
 
-        // Refresh every 10 seconds after authentication
-        setInterval(refreshAll, 10000);
+        setInterval(
+            refreshAll,
+            10000
+        );
+
     } catch (e) {
-        console.error('Dashboard initialization failed:', e);
+
+        console.error(
+            'Dashboard initialization failed:',
+            e
+        );
+
     }
+
 }
 
 init();
 
- </script>
+</script>
+
 </body>
 </html>

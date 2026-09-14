@@ -35,7 +35,7 @@ spec:
       serviceAccountName: worker-service-account
       containers:
       - name: worker
-        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/worker:c271f5a720b3cb094015afebd7a399d75c255749-54
+        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/worker:41711c3471465e248c67dc620693f777db2b10d3-72
         imagePullPolicy: Always
         securityContext:
             runAsNonRoot: true

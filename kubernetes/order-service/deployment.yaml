@@ -33,7 +33,7 @@ spec:
       serviceAccountName: order-service-service-account
       containers:
       - name: order-service
-        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/order-service:f0d0bdfd45254157f41558f166b90c58a6c875f8-52
+        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/order-service:4f4ff0b16367cc0a2db642f73658a0cab8461f7b-61
         imagePullPolicy: Always
         securityContext:
             runAsNonRoot: true
