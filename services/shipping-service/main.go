@@ -96,6 +96,8 @@ func migrate() {
 			updated_at TIMESTAMP DEFAULT NOW()
 		)`,
 		`CREATE INDEX IF NOT EXISTS idx_shipments_order ON shipments(order_id)`,
+		`CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_shipment_order
+         ON shipments(order_id)`,
 		`CREATE INDEX IF NOT EXISTS idx_shipments_tracking ON shipments(tracking_number)`,
 		`CREATE TABLE IF NOT EXISTS tracking_events (
 			id SERIAL PRIMARY KEY,
@@ -201,6 +203,42 @@ func createShipment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var existingShipmentID int
+	var existingTrackingNumber string
+	var existingCarrier string
+	var existingEstimatedDelivery time.Time
+
+	err := db.QueryRow(
+		`SELECT id, tracking_number, carrier, estimated_delivery
+	 FROM shipments
+	 WHERE order_id = $1
+	 LIMIT 1`,
+		req.OrderID,
+	).Scan(
+		&existingShipmentID,
+		&existingTrackingNumber,
+		&existingCarrier,
+		&existingEstimatedDelivery,
+	)
+
+	if err == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"shipment_id":        existingShipmentID,
+			"tracking_number":    existingTrackingNumber,
+			"carrier":            existingCarrier,
+			"estimated_delivery": existingEstimatedDelivery.Format("2006-01-02"),
+		})
+
+		return
+	}
+
+	if err != sql.ErrNoRows {
+		httpError(w, "failed to check existing shipment", http.StatusInternalServerError)
+		return
+	}
 	carrier := req.Carrier
 	if carrier == "" {
 		carrier = "royal_mail"
@@ -214,7 +252,7 @@ func createShipment(w http.ResponseWriter, r *http.Request) {
 	estimatedDelivery := time.Now().AddDate(0, 0, 3+rand.Intn(5))
 
 	var shipmentID int
-	err := db.QueryRow(
+	err = db.QueryRow(
 		`INSERT INTO shipments (order_id, carrier, tracking_number, recipient_name,
 		 address_line1, address_line2, city, postcode, country, weight_kg, estimated_delivery)
 		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`,
