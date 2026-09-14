@@ -261,6 +261,17 @@ func handleEvent(client *http.Client, services map[string]string, event Event) e
 		log.Printf("  -> Shipment created, updating order to processing")
 		// Update order status
 
+	case "shipment.in_transit":
+		log.Printf("  -> Shipment in transit, updating order to shipped")
+
+		orderURL := services["order"]
+
+		if err := updateOrderStatus(client, orderURL, event, "shipped"); err != nil {
+			return fmt.Errorf("failed to update order to shipped: %w", err)
+		}
+
+		log.Printf("  -> Order updated to shipped successfully")
+
 	case "shipment.delivered":
 		log.Printf("  -> Shipment delivered, updating order")
 		// Update order status to delivered
@@ -758,6 +769,58 @@ func createShipment(
 			"shipping service returned %d: %s",
 			shipmentResp.StatusCode,
 			string(responseBody),
+		)
+	}
+
+	return nil
+}
+
+func updateOrderStatus(
+	client *http.Client,
+	orderURL string,
+	event Event,
+	newStatus string,
+) error {
+
+	orderID, ok := event.Payload["order_id"].(float64)
+	if !ok {
+		return fmt.Errorf("missing or invalid order_id")
+	}
+
+	body := map[string]interface{}{
+		"order_id":   int(orderID),
+		"new_status": newStatus,
+	}
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("failed to marshal order status request: %w", err)
+	}
+
+	req, err := http.NewRequest(
+		http.MethodPut,
+		orderURL+"/status",
+		bytes.NewBuffer(data),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create order status request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("order status request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf(
+			"order service returned %d: %s",
+			resp.StatusCode,
+			string(respBody),
 		)
 	}
 
