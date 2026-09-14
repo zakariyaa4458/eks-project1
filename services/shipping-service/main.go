@@ -14,6 +14,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	_ "github.com/lib/pq"
 )
 
@@ -453,15 +456,44 @@ func publishEvent(eventType string, payload map[string]interface{}) {
 		log.Printf("Event (no SQS): %s %v", eventType, payload)
 		return
 	}
+
 	event := map[string]interface{}{
 		"type":      eventType,
 		"payload":   payload,
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	}
-	data, _ := json.Marshal(event)
-	log.Printf("Event -> SQS: %s", string(data))
-}
 
+	data, err := json.Marshal(event)
+	if err != nil {
+		log.Printf("Failed to marshal event: %v", err)
+		return
+	}
+
+	ctx := context.Background()
+
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		log.Printf("Failed to load AWS config: %v", err)
+		return
+	}
+
+	client := sqs.NewFromConfig(cfg)
+
+	result, err := client.SendMessage(ctx, &sqs.SendMessageInput{
+		QueueUrl:    aws.String(sqsQueue),
+		MessageBody: aws.String(string(data)),
+	})
+	if err != nil {
+		log.Printf("Failed to send event to SQS: %v", err)
+		return
+	}
+
+	log.Printf(
+		"Event sent to SQS: type=%s messageId=%s",
+		eventType,
+		aws.ToString(result.MessageId),
+	)
+}
 func httpError(w http.ResponseWriter, msg string, code int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
