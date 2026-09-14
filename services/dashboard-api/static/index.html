@@ -182,17 +182,29 @@
         const API = 'https://api.ecommerce.zakariyaalab.com';
         let token = localStorage.getItem('token') || '';
 
-        // Auto-login on load
-        if (!token) {
-            fetch(API + '/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: 'admin@platform.local', password: 'admin' })
-            })
-            .then(r => r.json())
-            .then(d => { token = d.token; localStorage.setItem('token', token); })
-            .catch(() => {});
-        }
+async function ensureAuth() {
+    if (token) {
+        return;
+    }
+
+    const r = await fetch(API + '/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            email: 'admin@platform.local',
+            password: 'admin'
+        })
+    });
+
+    if (!r.ok) {
+        throw new Error('Login failed');
+    }
+
+    const d = await r.json();
+
+    token = d.token;
+    localStorage.setItem('token', token);
+}
 
         function headers() {
             return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
@@ -228,7 +240,9 @@
         // --- Stats ---
         async function loadStats() {
             try {
-                const r = await fetch(API + '/dashboard/summary');
+                const r = await fetch(API + '/dashboard/summary', {
+                headers: headers()
+                 });
                 const d = await r.json();
                 document.getElementById('stats').innerHTML = `
                     <div class="card"><div class="card-label">Total Orders</div><div class="card-value blue">${d.orders?.total || 0}</div></div>
@@ -328,7 +342,9 @@
         // --- Payments ---
         async function loadPayments() {
             try {
-                const r = await fetch(API + '/dashboard/revenue');
+                const r = await fetch(API + '/dashboard/revenue', {
+                  headers: headers()
+                });
                 const d = await r.json();
                 document.getElementById('revenue-info').innerHTML = `
                     <div class="grid">
@@ -363,7 +379,9 @@
             } catch(e) {}
 
             try {
-                const r = await fetch(API + '/dashboard/shipping/overview');
+                const r = await fetch(API + '/dashboard/shipping/overview', {
+                headers: headers()
+                });
                 const d = await r.json();
                 const statuses = Object.entries(d.by_status || {}).map(([k,v]) => `${badge(k)} ${v}`).join('&nbsp;&nbsp;');
                 const carriers = Object.entries(d.by_carrier || {}).map(([k,v]) => `${k}: ${v}`).join(', ');
@@ -419,19 +437,33 @@
         }
 
         // --- Refresh ---
-        function refreshAll() {
-            loadStats();
-            loadOrders();
-            loadInventory();
-            loadPayments();
-            loadShipping();
-            loadNotifications();
-            loadServices();
-        }
+function refreshAll() {
+    loadStats();
+    loadOrders();
+    loadInventory();
+    loadPayments();
+    loadShipping();
+    loadNotifications();
+    loadServices();
+}
 
-        // Auto-refresh every 10s
+async function init() {
+    try {
+        // Wait until we have a JWT before making API requests
+        await ensureAuth();
+
+        // Initial dashboard load
         refreshAll();
+
+        // Refresh every 10 seconds after authentication
         setInterval(refreshAll, 10000);
-    </script>
+    } catch (e) {
+        console.error('Dashboard initialization failed:', e);
+    }
+}
+
+init();
+
+ </script>
 </body>
 </html>
