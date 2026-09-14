@@ -263,13 +263,26 @@ func handleEvent(client *http.Client, services map[string]string, event Event) e
 			log.Printf("  -> Delivery notification sent successfully")
 
 		case "cancelled":
-			// Release inventory
-			log.Printf("  -> Releasing inventory reservation")
-			// POST to inventory-service/release
+	log.Printf("  -> Releasing inventory reservation")
 
-			// Process refund if payment was made
-			log.Printf("  -> Processing refund")
-			// POST to payment-service/refund
+	inventoryURL := services["inventory"]
+
+	if err := releaseInventory(client, inventoryURL, event); err != nil {
+		return fmt.Errorf("failed to release inventory after cancellation: %w", err)
+	}
+
+	log.Printf("  -> Inventory released successfully")
+
+	log.Printf("  -> Processing refund")
+
+	paymentURL := services["payment"]
+
+	if err := refundOrder(client, paymentURL, event); err != nil {
+		return fmt.Errorf("failed to refund cancelled order: %w", err)
+	}
+
+	log.Printf("  -> Refund processing completed successfully")
+	
 		}
 
 	case "payment.completed":
@@ -1040,6 +1053,57 @@ func sendDeliveryNotification(
 		return fmt.Errorf(
 			"notification service returned %d: %s",
 			notificationResp.StatusCode,
+			string(respBody),
+		)
+	}
+
+	return nil
+}
+
+func refundOrder(
+	client *http.Client,
+	paymentURL string,
+	event Event,
+) error {
+
+	orderID, ok := event.Payload["order_id"].(float64)
+	if !ok {
+		return fmt.Errorf("missing or invalid order_id")
+	}
+
+	body := map[string]interface{}{
+		"order_id": int(orderID),
+		"reason":   "order cancelled",
+	}
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("failed to marshal refund request: %w", err)
+	}
+
+	req, err := http.NewRequest(
+		http.MethodPost,
+		paymentURL+"/refund",
+		bytes.NewBuffer(data),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create refund request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("refund request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf(
+			"payment service returned %d: %s",
+			resp.StatusCode,
 			string(respBody),
 		)
 	}

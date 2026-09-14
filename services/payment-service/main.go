@@ -77,30 +77,41 @@ func main() {
 func migrate() {
 	migrations := []string{
 		`CREATE TABLE IF NOT EXISTS payments (
-			id VARCHAR(50) PRIMARY KEY,
-			order_id INTEGER NOT NULL,
-			customer_id VARCHAR(255) NOT NULL,
-			amount DECIMAL(12,2) NOT NULL,
-			currency VARCHAR(3) NOT NULL DEFAULT 'GBP',
-			status VARCHAR(20) NOT NULL DEFAULT 'pending',
-			method VARCHAR(50),
-			reference VARCHAR(255),
-			created_at TIMESTAMP DEFAULT NOW(),
-			updated_at TIMESTAMP DEFAULT NOW()
-		)`,
-		`CREATE INDEX IF NOT EXISTS idx_payments_order ON payments(order_id)`,
-		`CREATE INDEX IF NOT EXISTS idx_payments_customer ON payments(customer_id)`,
+		id VARCHAR(50) PRIMARY KEY,
+		order_id INTEGER NOT NULL,
+		customer_id VARCHAR(255) NOT NULL,
+		amount DECIMAL(12,2) NOT NULL,
+		currency VARCHAR(3) NOT NULL DEFAULT 'GBP',
+		status VARCHAR(20) NOT NULL DEFAULT 'pending',
+		method VARCHAR(50),
+		reference VARCHAR(255),
+		created_at TIMESTAMP DEFAULT NOW(),
+		updated_at TIMESTAMP DEFAULT NOW()
+	)`,
+
+		`CREATE INDEX IF NOT EXISTS idx_payments_order
+	 ON payments(order_id)`,
+
+		`CREATE INDEX IF NOT EXISTS idx_payments_customer
+	 ON payments(customer_id)`,
+
+		`CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_payment_refund
+	 ON payments(reference)
+	 WHERE method = 'refund'`,
+
 		`CREATE TABLE IF NOT EXISTS ledger_entries (
-			id SERIAL PRIMARY KEY,
-			payment_id VARCHAR(50) NOT NULL REFERENCES payments(id),
-			entry_type VARCHAR(20) NOT NULL,
-			debit DECIMAL(12,2) NOT NULL DEFAULT 0,
-			credit DECIMAL(12,2) NOT NULL DEFAULT 0,
-			currency VARCHAR(3) NOT NULL DEFAULT 'GBP',
-			description TEXT,
-			created_at TIMESTAMP DEFAULT NOW()
-		)`,
-		`CREATE INDEX IF NOT EXISTS idx_ledger_payment ON ledger_entries(payment_id)`,
+		id SERIAL PRIMARY KEY,
+		payment_id VARCHAR(50) NOT NULL REFERENCES payments(id),
+		entry_type VARCHAR(20) NOT NULL,
+		debit DECIMAL(12,2) NOT NULL DEFAULT 0,
+		credit DECIMAL(12,2) NOT NULL DEFAULT 0,
+		currency VARCHAR(3) NOT NULL DEFAULT 'GBP',
+		description TEXT,
+		created_at TIMESTAMP DEFAULT NOW()
+	)`,
+
+		`CREATE INDEX IF NOT EXISTS idx_ledger_payment
+	 ON ledger_entries(payment_id)`,
 	}
 	for _, m := range migrations {
 		if _, err := db.Exec(m); err != nil {
@@ -156,10 +167,11 @@ func handleCharge(w http.ResponseWriter, r *http.Request) {
 
 	err := db.QueryRow(
 		`SELECT id, amount, currency, status
-	 FROM payments
-	 WHERE order_id = $1
-	   AND status = 'completed'
-	 LIMIT 1`,
+ FROM payments
+ WHERE order_id = $1
+ AND status IN ('completed', 'refunded', 'partially_refunded')
+ AND (method IS NULL OR method != 'refund')
+ LIMIT 1`,
 		req.OrderID,
 	).Scan(
 		&existingPaymentID,
@@ -265,6 +277,7 @@ func handleRefund(w http.ResponseWriter, r *http.Request) {
 
 	var req struct {
 		PaymentID string  `json:"payment_id"`
+		OrderID   int     `json:"order_id"`
 		Amount    float64 `json:"amount"`
 		Reason    string  `json:"reason"`
 	}
@@ -277,17 +290,88 @@ func handleRefund(w http.ResponseWriter, r *http.Request) {
 	var originalAmount float64
 	var orderID int
 	var paymentStatus, customerID, currency string
-	err := db.QueryRow(
-		"SELECT amount, order_id, status, customer_id, currency FROM payments WHERE id = $1",
-		req.PaymentID,
-	).Scan(&originalAmount, &orderID, &paymentStatus, &customerID, &currency)
+	var paymentID string
+	var err error
+
+	if req.PaymentID != "" {
+		paymentID = req.PaymentID
+
+		err = db.QueryRow(
+			`SELECT amount, order_id, status, customer_id, currency
+		 FROM payments
+		 WHERE id = $1
+		   AND (method IS NULL OR method != 'refund')`,
+			paymentID,
+		).Scan(
+			&originalAmount,
+			&orderID,
+			&paymentStatus,
+			&customerID,
+			&currency,
+		)
+
+	} else if req.OrderID != 0 {
+		err = db.QueryRow(
+			`SELECT id, amount, order_id, status, customer_id, currency
+		 FROM payments
+		 WHERE order_id = $1
+		   AND (method IS NULL OR method != 'refund')
+		   AND status IN ('completed', 'refunded', 'partially_refunded')
+		 ORDER BY created_at DESC
+		 LIMIT 1`,
+			req.OrderID,
+		).Scan(
+			&paymentID,
+			&originalAmount,
+			&orderID,
+			&paymentStatus,
+			&customerID,
+			&currency,
+		)
+
+	} else {
+		httpError(w, "payment_id or order_id required", http.StatusBadRequest)
+		return
+	}
+
+	if err == sql.ErrNoRows {
+		if req.PaymentID != "" {
+			httpError(w, "payment not found", http.StatusNotFound)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"order_id": req.OrderID,
+			"status":   "no_payment_to_refund",
+		})
+
+		return
+	}
+
 	if err != nil {
-		httpError(w, "payment not found", http.StatusNotFound)
+		httpError(w, "failed to find payment", http.StatusInternalServerError)
+		return
+	}
+
+	// Idempotency check
+	if paymentStatus == "refunded" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"payment_id": paymentID,
+			"order_id":   orderID,
+			"status":     "already_refunded",
+		})
+
 		return
 	}
 
 	if paymentStatus != "completed" {
-		httpError(w, "can only refund completed payments", http.StatusConflict)
+		httpError(w, "payment is not refundable", http.StatusConflict)
 		return
 	}
 
@@ -307,8 +391,8 @@ func handleRefund(w http.ResponseWriter, r *http.Request) {
 
 	_, err = tx.Exec(
 		`INSERT INTO payments (id, order_id, customer_id, amount, currency, status, method, reference)
-		 VALUES ($1, $2, $3, $4, $5, 'completed', 'refund', $6)`,
-		refundID, orderID, customerID, refundAmount, currency, req.PaymentID,
+	 VALUES ($1, $2, $3, $4, $5, 'completed', 'refund', $6)`,
+		refundID, orderID, customerID, refundAmount, currency, paymentID,
 	)
 	if err != nil {
 		httpError(w, "refund insert failed", http.StatusInternalServerError)
@@ -316,16 +400,34 @@ func handleRefund(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Reverse ledger entries
-	tx.Exec(
+	_, err = tx.Exec(
 		`INSERT INTO ledger_entries (payment_id, entry_type, credit, currency, description)
-		 VALUES ($1, 'refund', $2, $3, $4)`,
-		refundID, refundAmount, currency, fmt.Sprintf("Refund for payment %s: %s", req.PaymentID, req.Reason),
+	 VALUES ($1, 'refund', $2, $3, $4)`,
+		refundID,
+		refundAmount,
+		currency,
+		fmt.Sprintf("Refund for payment %s: %s", paymentID, req.Reason),
 	)
 
+	if err != nil {
+		httpError(w, "refund ledger entry failed", http.StatusInternalServerError)
+		return
+	}
 	if refundAmount >= originalAmount {
-		tx.Exec("UPDATE payments SET status = 'refunded', updated_at = NOW() WHERE id = $1", req.PaymentID)
+		_, err = tx.Exec(
+			"UPDATE payments SET status = 'refunded', updated_at = NOW() WHERE id = $1",
+			paymentID,
+		)
 	} else {
-		tx.Exec("UPDATE payments SET status = 'partially_refunded', updated_at = NOW() WHERE id = $1", req.PaymentID)
+		_, err = tx.Exec(
+			"UPDATE payments SET status = 'partially_refunded', updated_at = NOW() WHERE id = $1",
+			paymentID,
+		)
+	}
+
+	if err != nil {
+		httpError(w, "failed to update payment status", http.StatusInternalServerError)
+		return
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -335,7 +437,7 @@ func handleRefund(w http.ResponseWriter, r *http.Request) {
 
 	publishEvent("payment.refunded", map[string]interface{}{
 		"refund_id":  refundID,
-		"payment_id": req.PaymentID,
+		"payment_id": paymentID,
 		"order_id":   orderID,
 		"amount":     refundAmount,
 		"reason":     req.Reason,
@@ -344,7 +446,7 @@ func handleRefund(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"refund_id":  refundID,
-		"payment_id": req.PaymentID,
+		"payment_id": paymentID,
 		"amount":     refundAmount,
 		"status":     "completed",
 	})
