@@ -14,6 +14,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
+
 	_ "github.com/lib/pq"
 )
 
@@ -517,18 +521,49 @@ func generatePaymentID() string {
 }
 
 func publishEvent(eventType string, payload map[string]interface{}) {
-	sqsQueue := os.Getenv("SQS_QUEUE_URL")
-	if sqsQueue == "" {
-		log.Printf("Event (no SQS): %s %v", eventType, payload)
+	queueURL := os.Getenv("SQS_QUEUE_URL")
+	if queueURL == "" {
+		log.Printf("SQS_QUEUE_URL not set, skipping event: %s", eventType)
 		return
 	}
+
 	event := map[string]interface{}{
 		"type":      eventType,
 		"payload":   payload,
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	}
-	data, _ := json.Marshal(event)
-	log.Printf("Event -> SQS: %s", string(data))
+
+	data, err := json.Marshal(event)
+	if err != nil {
+		log.Printf("Failed to marshal event %s: %v", eventType, err)
+		return
+	}
+
+	cfg, err := config.LoadDefaultConfig(context.Background())
+	if err != nil {
+		log.Printf("Failed to load AWS config: %v", err)
+		return
+	}
+
+	client := sqs.NewFromConfig(cfg)
+
+	result, err := client.SendMessage(
+		context.Background(),
+		&sqs.SendMessageInput{
+			QueueUrl:    aws.String(queueURL),
+			MessageBody: aws.String(string(data)),
+		},
+	)
+	if err != nil {
+		log.Printf("Failed to send event to SQS: %v", err)
+		return
+	}
+
+	log.Printf(
+		"Event sent to SQS: type=%s messageId=%s",
+		eventType,
+		aws.ToString(result.MessageId),
+	)
 }
 
 func httpError(w http.ResponseWriter, msg string, code int) {
