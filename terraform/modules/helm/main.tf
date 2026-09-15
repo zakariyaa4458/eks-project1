@@ -171,6 +171,21 @@ resource "helm_release" "grafana" {
   ]
 }
 
+resource "helm_release" "snapshot.storage.k8s.io" {
+  name = "snapshot.storage.k8s.io"
+  repository = "https://piraeus.io/helm-charts/"
+  chart = "snapshot-controller"
+  version = "5.2.0"
+  namespace = "kube-system"
+  create_namespace = true
+
+   values = [
+    "${file("helm-values/snapshot-controller.yaml")}"
+  ]
+
+}
+
+
 
 
 
