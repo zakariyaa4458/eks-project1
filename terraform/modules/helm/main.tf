@@ -171,7 +171,7 @@ resource "helm_release" "grafana" {
   ]
 }
 
-resource "helm_release" "snapshot.storage.k8s.io" {
+resource "helm_release" "snapshot_storage_k8s_io" {
   name = "snapshot.storage.k8s.io"
   repository = "https://piraeus.io/helm-charts/"
   chart = "snapshot-controller"
