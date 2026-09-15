@@ -158,18 +158,18 @@ resource "helm_release" "prometheus" {
   ]
 }
 
-#resource "helm_release" "grafana" {
- # name = "grafana"
-  #repository = " https://grafana.github.io/helm-charts"
-  #chart = "grafana"
-  #version = "10.5.15"
-  #namespace = "monitoring-ns"
-  #create_namespace = true
+resource "helm_release" "grafana" {
+  name = "grafana"
+  repository = " https://grafana.github.io/helm-charts"
+  chart = "grafana"
+  version = "10.5.15"
+  namespace = "monitoring-ns"
+  create_namespace = true
 
-   #values = [
-    #"${file("helm-values/values-grafana.yaml")}"
-  #]
-#}
+   values = [
+    "${file("helm-values/values-grafana.yaml")}"
+  ]
+}
 
 
 

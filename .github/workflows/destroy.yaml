@@ -1,0 +1,59 @@
+name: destroy pipeline
+
+run-name:  Destroy pipeline triggered by ${{ github.actor }}
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform-destroy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: checkout code
+        uses: actions/checkout@4
+
+      - name: configure Aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::499024813019:role/githubs-action-destroypipeline
+          aws-region: eu-west-2
+
+      - name: setup terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.10.0
+
+      - name: Terraform init
+        working-directory: terraform
+        run: terraform init
+
+      - name: terraform destroy plan
+        working-directory: terraform
+        run: terraform plan -destroy -out=destroy.tfplan
+
+      - name: Apply Terraform destroy plan
+        working-directory: terraform
+        run: terraform apply -auto-approve destroy.tfplan
+
+      - name: Verify Terraform state is empty
+        working-directory: terraform
+        run: |
+             state_list=$(terraform state list)
+
+             if [ -n "$state_list" ]; then
+               echo "there are still resources in this terraform state:"
+               echo "$state_list"
+               exit 1
+
+             fi
+
+              echo "Terraform state is empty."
+
+
+      
