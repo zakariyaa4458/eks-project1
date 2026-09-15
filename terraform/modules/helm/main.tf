@@ -145,7 +145,31 @@ resource "helm_release" "aws-ebs-csi-drive" {
 
 }
 
+resource "helm_release" "prometheus" {
+  name = "prometheus"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart = "prometheus"
+  version = "29.30.0"
+  namespace = "monitoring-ns"
+  create_namespace = true
 
+   values = [
+    "${file("helm-values/values-prom.yaml")}"
+  ]
+}
+
+#resource "helm_release" "grafana" {
+ # name = "grafana"
+  #repository = " https://grafana.github.io/helm-charts"
+  #chart = "grafana"
+  #version = "10.5.15"
+  #namespace = "monitoring-ns"
+  #create_namespace = true
+
+   #values = [
+    #"${file("helm-values/values-grafana.yaml")}"
+  #]
+#}
 
 
 

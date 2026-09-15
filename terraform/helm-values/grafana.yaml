@@ -1,0 +1,8 @@
+#datasources:
+ # datasources.yaml:
+  #  apiVersion: 1
+   # dataSources:
+    #  - name: Prometheus
+     #   type: prometheus
+      #  url:
+       # isDefault: true

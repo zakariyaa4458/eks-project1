@@ -34,7 +34,7 @@ module "helm" {
   aws_eks_cluster_eks_cluster_name     = module.eks.aws_eks_cluster_eks_cluster_name
   module_external_dns                  = module.irsa.module_external_dns
   module_aws_load_balancer_controller  = module.irsa.module_aws_load_balancer_controller
-  ebs_csi_controller_role_arn          = module.irsa.ebs_csi_controller_role_arn 
+  ebs_csi_controller_role_arn          = module.irsa.ebs_csi_controller_role_arn
 
 }
 
