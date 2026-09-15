@@ -1,12 +1,12 @@
 persistence:
   enabled: true
   size: 10Gi
-  storageClassName: standard
+  storageClassName: ebs-sc
 
 datasources:
   datasources.yaml:
     apiVersion: 1
-    dataSources:
+    datasources:
       - name: Prometheus
         type: prometheus
         url: http://prometheus-server.monitoring-ns.svc.cluster.local
