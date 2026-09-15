@@ -2,10 +2,10 @@ server:
   persistentVolume:
     enabled: true
     storageClass: "gp2"
-    size: "10gi"
+    size: "10Gi"
 alertmanager:
   persistence:
     enabled: true
     storageClass: "gp2"
-    size: "10gi"
+    size: "10Gi"
 
