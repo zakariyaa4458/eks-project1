@@ -84,6 +84,20 @@ spec:
                   secretKeyRef: 
                     name: postgres-secret
                     key: POSTGRES_PASSWORD
+
+              - name: POSTGRES_USER
+                valueFrom:
+                  configMapKeyRef:
+                    name: postgres-config
+                    key: POSTGRES_USER
+
+              - name: POSTGRES_DB
+                valueFrom:
+                  configMapKeyRef:
+                    name: postgres-config
+                    key: POSTGRES_DB
+                  
+                
                 
             volumeMounts:
               - name: postgres-data
@@ -94,6 +108,13 @@ spec:
 
               - name: postgres-run
                 mountPath: /var/run/postgresql
+
+              - name: secrets-store
+                mountPath: "/mnt/secrets-store"
+                readOnly: true
+
+             
+
       volumes:
         - name: tmp
           emptyDir:
@@ -103,11 +124,21 @@ spec:
           emptyDir:
             sizeLimit: 128Mi
 
+   
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "postgres-secret-provider"
+
+        
+
      
   volumeClaimTemplates:
-    - metadata: 
+     - metadata: 
         name: postgres-data
-      spec: 
+       spec: 
         storageClassName: ebs-sc
         accessModes:
           - ReadWriteOnce
