@@ -119,6 +119,13 @@ resource "helm_release" "secrets-store-csi-driver" {
   chart = "secrets-store-csi-driver"
   version = "1.6.0"
   create_namespace = true
+
+  values = [
+
+      "${file("helm-values/secret-store.yaml")}"
+  ]
+
+  
 }
 
 resource "helm_release" "aws-ebs-csi-drive" {
