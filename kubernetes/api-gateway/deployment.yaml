@@ -29,7 +29,7 @@ spec:
       serviceAccountName: api-gateway-service-account
       containers:
         - name: api-gateway
-          image: api-gateway:ed2a85769f00387ffcc829ba87425f11ece529fb-102
+          image: api-gateway:ce0b5cb7c15163c0ee31ee09043177bd492676d6-103
           securityContext:
             runAsNonRoot: true
             capabilities:
