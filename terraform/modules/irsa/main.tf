@@ -383,7 +383,7 @@ resource "aws_iam_role_policy_attachment" "postgres_iam_policy_attachment" {
 }
 
 resource "aws_iam_role" "database_api_iam_role" {
-  name = "postgres-role"
+  name = "database-api-role"
 
   assume_role_policy = jsonencode({
    Version = "2012-10-17"
