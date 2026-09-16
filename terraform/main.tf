@@ -80,6 +80,7 @@ module "security" {
   cloudwatch_key_arn                  = var.cloudwatch_key_arn
   aws_account_id                      = var.aws_account_id
   flow_log_role_arn                   = var.flow_log_role_arn
+  database_url                        = var.database_url
 
 
 }

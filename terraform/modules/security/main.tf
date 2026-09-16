@@ -132,5 +132,5 @@ resource "aws_secretsmanager_secret" "database_url" {
 
 resource "aws_secretsmanager_secret_version" "database_url_secret_version" {
   secret_id     = aws_secretsmanager_secret.database_url.id
-  secret_string = "var.database_url"
+  secret_string = var.database_url
 }

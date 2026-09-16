@@ -43,3 +43,8 @@ variable "flow_log_role_arn" {
     type = string
   
 }
+
+variable "database_url" {
+  type = string
+  
+}
