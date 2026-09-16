@@ -124,3 +124,7 @@ resource "aws_cloudwatch_log_group" "flow_log_group" {
     
   }
 }
+
+resource "aws_secretsmanager_secret" "database_url" {
+  name = "database_url"
+}

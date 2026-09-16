@@ -72,3 +72,8 @@ variable "aws_iam_role_node_group_role_arn" {
   type = string
 
 }
+
+variable "database_url" {
+  type = string
+  
+}
