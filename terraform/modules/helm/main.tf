@@ -185,18 +185,18 @@ resource "helm_release" "snapshot_storage_k8s_io" {
 
 }
 
-#resource "helm_release" "secrets_store_csi_driver_aws" {
- # name = "secrets-store-csi-driver-aws"
-  #chart = "secrets-store-csi-driver-provider-aws"
-  #namespace = "kube-system"
-  #repository = "https://aws.github.io/secrets-store-csi-driver-provider-aws"
-  #create_namespace = true
+resource "helm_release" "secrets_store_csi_driver_aws" {
+  name = "secrets-store-csi-driver-aws"
+  chart = "secrets-store-csi-driver-provider-aws"
+  namespace = "kube-system"
+  repository = "https://aws.github.io/secrets-store-csi-driver-provider-aws"
+  create_namespace = true
   
-  #values = [
-   # "${file("helm-values/secret-store-aws.yaml")}"
-  #]
+  values = [
+    "${file("helm-values/secret-store-aws.yaml")}"
+  ]
   
-#}
+}
 
 
 
