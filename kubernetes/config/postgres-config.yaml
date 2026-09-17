@@ -5,5 +5,5 @@ metadata:
   namespace: database-ns
 
 data:
-  POSTGRES_DB: b3JkZXJz
-  POSTGRES_USER: YXBw
+  POSTGRES_DB: orders
+  POSTGRES_USER: app
