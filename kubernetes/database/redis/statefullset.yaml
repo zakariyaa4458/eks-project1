@@ -9,7 +9,7 @@ metadata:
   annotations:
     checkov.io/skip1: CKV_K8S_43=I will add commits when I apply the aws infrastructure
     checkov.io/skip2: CKV_K8S_22=read-only filesystems is not optimal for redis, as it needs to write to disk for persistence
-
+    checkov.io/skip3: CKV_K8S_40=containers need this uid to have correct permissions
 spec:
   serviceName: redis-service
   replicas: 1
