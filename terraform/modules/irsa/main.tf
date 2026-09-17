@@ -481,3 +481,22 @@ resource "aws_iam_role" "database_service_roles" {
     }]
   })
 }
+
+resource "aws_iam_policy" "services_iam_policy" {
+  name   = "services-iam-policy"
+  policy = data.aws_iam_policy_document.services_iam_policy_document.json
+}
+
+data "aws_iam_policy_document" "services_iam_policy_document" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    
+    resources = ["arn:aws:sqs:eu-west-2:499024813019:eks_sqs"]
+  }
+
+}
