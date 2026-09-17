@@ -29,7 +29,7 @@ spec:
       serviceAccountName: inventory-service-service-account
       containers:
         - name: inventory-service
-          image: inventory-service:52cedc0261aab54eba28c434f2800ac476ad43d3-115
+          image: inventory-service:29f80131a4ef3101fdaf27bb470dfea81a19faef-116
           securityContext:
             runAsNonRoot: true
             runAsUser: 10000
