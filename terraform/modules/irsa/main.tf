@@ -437,7 +437,7 @@ resource "aws_iam_role_policy_attachment" "aws_secret_iam_policy_attachment" {
 }
 
 
-resource "aws_iam_role_policy_attachment" "aws_secret_iam_policy_attachment" {
+resource "aws_iam_role_policy_attachment" "aws_secret_iam_policy_attachments_" {
   for_each = toset([
     aws_iam_role.inventory_iam_role.name,
     aws_iam_role.order_iam_role.name,
