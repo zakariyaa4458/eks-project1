@@ -1,5 +1,5 @@
 # This Dockerfile is used to build and run the API Gateway service for the EKS project.
-FROM golang:1.22-alpine AS builder
+FROM golang:1.25.13-alpine AS builder
 RUN adduser --disabled-password appuser 
 #USER appuser
 WORKDIR /app
@@ -14,6 +14,7 @@ RUN go build -o main .
 
 #final stage
 FROM alpine:latest
+RUN apk upgrade --no-cache
 RUN apk add --no-cache curl
 RUN adduser --disabled-password appuser 
 USER appuser
