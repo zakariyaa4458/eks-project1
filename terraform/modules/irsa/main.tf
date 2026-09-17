@@ -500,3 +500,56 @@ data "aws_iam_policy_document" "services_iam_policy_document" {
   }
 
 }
+
+resource "aws_iam_role" "keda_iam_role" {
+  name = "keda-iam-role"
+
+  assume_role_policy = jsonencode({
+   Version = "2012-10-17"
+
+   Statement = [
+      {
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Effect = "Allow"
+
+        Principal = {
+          Federated =  var.aws_iam_openid_connect_provider_arn
+        }
+
+        Condition = {
+          StringEquals = {
+        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:sub" = "system:serviceaccount:application-namespace:keda-service-account"
+        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:aud" = "sts.amazonaws.com"               
+      }, 
+        }
+      }
+    ]
+
+  }
+  )
+}
+
+data "aws_iam_policy_document" "keda_iam_policy_document" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sqs:GetQueueAttributes"
+    ]
+
+    
+    resources = ["arn:aws:sqs:eu-west-2:499024813019:eks_sqs"]
+  }
+
+}
+
+resource "aws_iam_policy" "keda_iam_policy" {
+  name   = "keda-iam-policy"
+  policy = data.aws_iam_policy_document.keda_iam_policy_document.json
+
+}
+
+resource "aws_iam_role_policy_attachment" "keda_iam_policy_attachment" {
+  role       = aws_iam_role.keda_iam_role.name
+  policy_arn = aws_iam_policy.keda_iam_policy.arn
+}
