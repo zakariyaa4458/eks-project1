@@ -48,6 +48,11 @@ spec:
             readOnlyRootFilesystem: true
         ports:
         - containerPort: 8083
+
+        volumeMounts:
+          - name: aws-secrets-store
+            mountPath: "/mnt/secrets-store/application"
+            readOnly: true
         
         envFrom:
           - secretRef:
@@ -78,3 +83,11 @@ spec:
             port: 8083
           initialDelaySeconds: 15
           periodSeconds: 10
+
+      volumes:
+       - name: aws-secrets-store
+         csi:
+           driver: secrets-store.csi.k8s.io
+           readOnly: true
+           volumeAttributes:
+             secretProviderClass: aws-secrets            
