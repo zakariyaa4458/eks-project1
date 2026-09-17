@@ -451,10 +451,10 @@ func getEnv(key, fallback string) string {
 func waitForDB() {
 	for i := 0; i < 120; i++ {
 		if err := db.Ping(); err == nil {
-			return
-		}
-		log.Printf("Waiting for database... (%d/120)", i+1)
-		time.Sleep(time.Second)
-	}
-	log.Fatal("Database not ready after 120s")
+    log.Println("Database connected")
+    return
+} else {
+    log.Printf("Waiting for database... (%d/120): %v", i, err)
+}
+}
 }
