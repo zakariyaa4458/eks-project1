@@ -113,21 +113,21 @@ jobs:
     - name: Update the image tag in the relevant Kubernetes Deployment manifest. 
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
-        manifest-path: kubernetes/api-gateway/deployment.yaml
+        manifest-path: kubernetes/application/api-gateway/deployment.yaml
         new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: api-gateway
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
-        manifest-path: kubernetes/dashboard-api/deployment.yaml
+        manifest-path: kubernetes/application/dashboard-api/deployment.yaml
         new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: dashboard-api
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
-        manifest-path: kubernetes/inventory-service/deployment.yaml
+        manifest-path: kubernetes/application/inventory-service/deployment.yaml
         new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: inventory-service
 
@@ -141,14 +141,14 @@ jobs:
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
-        manifest-path: kubernetes/order-service/deployment.yaml
+        manifest-path: kubernetes/application/order-service/deployment.yaml
         new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: order-service
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
-        manifest-path: kubernetes/payment-service/deployment.yaml
+        manifest-path: kubernetes/application/payment-service/deployment.yaml
         new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: payment-service
 
@@ -156,21 +156,21 @@ jobs:
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
-        manifest-path: kubernetes/scheduler/deployment.yaml
+        manifest-path: kubernetes/application/scheduler/deployment.yaml
         new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: scheduler 
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
-        manifest-path: kubernetes/shipping-service/deployment.yaml
+        manifest-path: kubernetes/application/shipping-service/deployment.yaml
         new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: shipping-service
 
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
-        manifest-path: kubernetes/worker/deployment.yaml
+        manifest-path: kubernetes/application/worker/deployment.yaml
         new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: worker
 

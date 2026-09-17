@@ -1,0 +1,10 @@
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: keda-sqs-auth
+  namespace: application-namespace
+
+spec:
+  podIdentity:
+    provider: aws
+    identityOwner: keda
