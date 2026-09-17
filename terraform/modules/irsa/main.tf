@@ -518,7 +518,7 @@ resource "aws_iam_role" "keda_iam_role" {
 
         Condition = {
           StringEquals = {
-        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:sub" = "system:serviceaccount:application-namespace:keda-service-account"
+        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:sub" = "system:serviceaccount:kube-system:keda-operator"
         "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:aud" = "sts.amazonaws.com"               
       }, 
         }
