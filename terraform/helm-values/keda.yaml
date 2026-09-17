@@ -1,7 +1,9 @@
 crds:
   install: true
 
-serviceAccount:
-  annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::499024813019:role/keda-iam-role
+podIdentity:
+  aws:
+    irsa:
+      enabled: true
+      roleArn: arn:aws:iam::499024813019:role/keda-iam-role
   
