@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: database
+  namespace: argo-cd
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/zakariyaa4458/eks-project1
+    targetRevision: main
+    path: kubernetes/database
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: database-ns
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
