@@ -428,9 +428,63 @@ data "aws_iam_policy_document" "aws_secret_iam_policy_document" {
 resource "aws_iam_policy" "aws_secret_iam_policy" {
   name   = "aws-secret-iam-policy"
   policy = data.aws_iam_policy_document.aws_secret_iam_policy_document.json
+
 }
 
 resource "aws_iam_role_policy_attachment" "aws_secret_iam_policy_attachment" {
   role       = aws_iam_role.database_api_iam_role.name
   policy_arn = aws_iam_policy.aws_secret_iam_policy.arn
+}
+
+
+resource "aws_iam_role_policy_attachment" "aws_secret_iam_policy_attachment" {
+  for_each = toset([
+    aws_iam_role.inventory_iam_role.name,
+    aws_iam_role.order_iam_role.name,
+    aws_iam_role.payment_iam_role.name,
+    aws_iam_role.scheduler_iam_role.name,
+    aws_iam_role.shipping_iam_role.name,
+    aws_iam_role.notification_iam_role.name
+  ])
+
+  role       = each.value
+  policy_arn = aws_iam_policy.aws_secret_iam_policy.arn
+}
+
+locals {
+  database_service_accounts = {
+    inventory     = "inventory-service-service-account"
+    order         = "order-service-service-account"
+    payment       = "payment-service-service-account"
+    scheduler     = "scheduler-service-service-account"
+    shipping      = "shipping-service-service-account"
+    notification  = "notification-service-service-account"
+  }
+}
+
+
+resource "aws_iam_role" "database_service_roles" {
+  for_each = local.database_service_accounts
+
+  name = "${each.key}-database-secret-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [{
+      Effect = "Allow"
+      Action = "sts:AssumeRoleWithWebIdentity"
+
+      Principal = {
+        Federated = var.aws_iam_openid_connect_provider_arn
+      }
+
+      Condition = {
+        StringEquals = {
+          "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:sub" = "system:serviceaccount:application-namespace:${each.value}"
+          "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:aud" = "sts.amazonaws.com"
+        }
+      }
+    }]
+  })
 }
