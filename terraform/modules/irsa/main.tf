@@ -440,7 +440,7 @@ resource "aws_iam_role_policy_attachment" "aws_secret_iam_policy_attachment" {
 resource "aws_iam_role_policy_attachment" "aws_secret_iam_policy_attachments_" {
   for_each = aws_iam_role.database_service_roles
 
-  role       = each.value
+  role       = each.value.name
   policy_arn = aws_iam_policy.aws_secret_iam_policy.arn
 }
 
