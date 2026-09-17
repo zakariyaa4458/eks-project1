@@ -29,7 +29,7 @@ spec:
       serviceAccountName: notification-service-service-account
       containers:
         - name: notification-service
-          image: notification-service:7276ce4c28c2f5ece7e2e6ce2373629bfea29595-114
+          image: notification-service:52cedc0261aab54eba28c434f2800ac476ad43d3-115
           securityContext:
             runAsNonRoot: true
             capabilities:

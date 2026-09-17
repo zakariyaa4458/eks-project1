@@ -29,7 +29,7 @@ spec:
       serviceAccountName: worker-service-account
       containers:
         - name: worker
-          image: worker:7276ce4c28c2f5ece7e2e6ce2373629bfea29595-114
+          image: worker:52cedc0261aab54eba28c434f2800ac476ad43d3-115
           securityContext:
             runAsNonRoot: true
             capabilities:
