@@ -205,6 +205,19 @@ resource "helm_release" "secrets_store_csi_driver_aws" {
   
 }
 
+resource "helm_release"  "keda" {
+  name = "keda"
+  chart = "keda"
+  repository = "https://kedacore.github.io/charts"
+  namespace = "kube-system"
+  create_namespace = true
+  version = "2.20.2"
+
+  values = [
+    "${file("helm-values/keda.yaml")}"
+  ]
+  
+}
 
 
 
