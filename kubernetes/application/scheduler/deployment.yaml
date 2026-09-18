@@ -36,7 +36,7 @@ spec:
       containers:
         - name: scheduler
           image: >-
-            499024813019.dkr.ecr.eu-west-2.amazonaws.com/scheduler:1f0bda0ccff5e885764c5a3deb66ec38f4fef2a9-126
+            499024813019.dkr.ecr.eu-west-2.amazonaws.com/scheduler:d27aef255e06bbbfe308c3ad4b367e3282178ca1-127
           imagePullPolicy: Always
           securityContext:
             runAsNonRoot: true
