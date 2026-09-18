@@ -449,7 +449,7 @@ locals {
     inventory     = "inventory-service-service-account"
     order         = "order-service-service-account"
     payment       = "payment-service-service-account"
-    scheduler     = "scheduler-service-service-account"
+    scheduler     = "scheduler-service-account"
     shipping      = "shipping-service-service-account"
     notification  = "notification-service-service-account"
   }
