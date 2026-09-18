@@ -36,7 +36,7 @@ spec:
       containers:
         - name: worker
           image: >-
-            499024813019.dkr.ecr.eu-west-2.amazonaws.com/worker:78f3ad5f2b8f682a9d805c669b66e22cfa305056-128
+            499024813019.dkr.ecr.eu-west-2.amazonaws.com/worker:563d5c53bc0fc7353a09756edc9244f9450bfc2e-129
           imagePullPolicy: Always
           securityContext:
             runAsNonRoot: true
