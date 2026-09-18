@@ -3,13 +3,13 @@ name: infrastructure pipeline
 run-name: infrastructure Pipeline triggered by ${{ github.actor }}
 
 on:
-  workflow_run:
-    workflows:
-      - ci pipeline
-    types:
-      - completed
+  push:
     branches:
       - main
+
+
+    paths:
+    - terraform/**
 
 permissions:
   id-token: write
