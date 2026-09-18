@@ -70,7 +70,7 @@ func main() {
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		<-sigChan
-		log.Println("Shutting down worker...")
+		log.Println("Shutting down worker now ...")
 		cancel()
 	}()
 
