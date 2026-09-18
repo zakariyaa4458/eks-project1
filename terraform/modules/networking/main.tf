@@ -1,5 +1,5 @@
 resource "aws_vpc" "main" {
-  #checkov:skip=CKV2_AWS_11: it is enabled through and refernced through the vpc variable
+  #checkov:skip=CKV2_AWS_11:it is enabled through and refernced through the vpc variable
   region           = var.region
   cidr_block       = "10.0.0.0/16"
   instance_tenancy = "default"
