@@ -322,7 +322,7 @@ func handleEvent(client *http.Client, services map[string]string, event Event) e
 		log.Printf("  -> Order updated to delivered successfully")
 
 	default:
-		log.Printf("  -> Unknown event type: %s (skipping)", event.Type)
+    return fmt.Errorf("unknown event type: %s", event.Type)
 	}
 
 	_ = client
