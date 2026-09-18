@@ -16,7 +16,6 @@ module "cert_manager_irsa_role" {
 
 }
 
-
 module "karpenter" {
   #checkov:skip=CKV_AWS_1: 
   source = "terraform-aws-modules/eks/aws//modules/karpenter"
