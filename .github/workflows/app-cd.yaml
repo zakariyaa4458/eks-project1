@@ -124,6 +124,11 @@ jobs:
         new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: dashboard-api
 
+    - name: Check manifest change
+      run: |
+             grep "image:" kubernetes/application/inventory-service/deployment.yaml
+             git diff
+
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
