@@ -11,6 +11,8 @@ spec:
     repoURL: https://github.com/zakariyaa4458/eks-project1
     targetRevision: main
     path: kubernetes/application
+    directory:
+      recurse: true
 
   destination:
     server: https://kubernetes.default.svc
