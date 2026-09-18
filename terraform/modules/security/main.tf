@@ -128,11 +128,10 @@ resource "aws_cloudwatch_log_group" "flow_log_group" {
 resource "aws_secretsmanager_secret" "database_url" {
   name = "database_url"
   
-
 }
 
 resource "aws_secretsmanager_secret_version" "database_url_secret_version" {
   secret_id     = aws_secretsmanager_secret.database_url.id
   secret_string = jsonencode (var.database_url)
-  
+
 }
