@@ -134,7 +134,7 @@ jobs:
     - name: Update the image tag in the relevant Kubernetes Deployment manifest.
       uses: Charlyzzz/update-k8s-image@v1.7.1
       with:
-        manifest-path: kubernetes/notification-service/deployment.yaml
+        manifest-path: kubernetes/application/notification-service/deployment.yaml
         new-image-tag: ${{ env.IMAGE_TAG }}
         container-name: notification-service
 
