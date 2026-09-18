@@ -52,7 +52,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Health check endpoint
+	// Health Check endpoint
 	go func() {
 		mux := http.NewServeMux()
 		mux.HandleFunc("/livez", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
