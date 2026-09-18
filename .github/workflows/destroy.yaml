@@ -16,7 +16,7 @@ jobs:
     steps:
 
       - name: checkout code
-        uses: actions/checkout@4
+        uses: actions/checkout@v4
 
       - name: configure Aws credentials
         uses: aws-actions/configure-aws-credentials@v4
