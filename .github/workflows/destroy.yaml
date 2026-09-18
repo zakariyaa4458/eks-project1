@@ -35,6 +35,17 @@ jobs:
 
       - name: terraform destroy plan
         working-directory: terraform
+
+        env:
+                TF_VAR_aws_key_arn: ${{ secrets.AWS_KEY_ARN }}
+                TF_VAR_aws_key_ecr_arn: ${{ secrets.AWS_SECRET_KEY }}
+                TF_VAR_cloudwatch_key_arn: ${{ secrets.CLOUDWATCH_KEY_ARN }}
+                TF_VAR_aws_account_id: ${{ secrets.AWS_ACCOUNT_ID }}
+                TF_VAR_eks_role_arn: ${{ secrets.EKS_ROLE_ARN }}
+                TF_VAR_flow_log_role_arn: ${{ secrets.FLOW_LOG_ROLE_ARN }}
+                TF_VAR_aws_iam_role_node_group_role_arn: ${{ secrets.AWS_IAM_ROLE_NODE_GROUP_ROLE_ARN }}
+                TF_VAR_database_url: ${{ secrets.TF_VAR_DATABASE_URL }}
+                
         run: terraform plan -destroy -out=destroy.tfplan
 
       - name: Apply Terraform destroy plan
