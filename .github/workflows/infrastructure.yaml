@@ -16,10 +16,115 @@ permissions:
   contents: read
   actions: read
 
-jobs:  
+jobs:
+  terraform-check:
+    runs-on: ubuntu-latest
+    
+
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+        - name: checkout code
+          uses: actions/checkout@v4
+
+        - name: configure aws
+          uses: aws-actions/configure-aws-credentials@v4
+
+          with:
+            role-to-assume: arn:aws:iam::499024813019:role/terraform_aws
+            aws-region: eu-west-2
+
+        - name: Sts GetCallerIdentity
+          run: |
+              aws sts get-caller-identity
+
+
+        - name: setup terraform
+          uses: hashicorp/setup-terraform@v4
+          with: 
+            terraform_version: 1.10.0
+
+        - name: terraform-init
+          run: terraform init
+        
+        - name: Check Terraform state
+          run: |
+                terraform workspace show
+                terraform state pull | grep -E '"lineage"|"serial"'
+                terraform state list | grep traefik || true
+
+        - name: terraform-fmt
+          run: terraform fmt 
+
+        - name: setup tflint
+          uses: terraform-linters/setup-tflint@v4
+
+        - name: run tflint
+          run: tflint
+
+
+        - name: run checkov
+          uses: bridgecrewio/checkov-action@master
+          with:
+            hard_fail_on: CKV_AWS_103,CKV2_AWS_74,CKV2_AWS_12,CKV2_AWS_260,CKV2_AWS_129
+            framework: terraform
+            
+
+        - name: terraform-validate
+          run: terraform validate
+
+        - name: Check live Traefik state
+          run: |
+                aws eks update-kubeconfig --region eu-west-2 --name eks-cluster
+                kubectl get svc -n traefik || true
+                helm status traefik -n traefik || true
+
+        - name: Reinitialize Terraform backend
+          run: |
+                 rm -rf .terraform
+                 terraform init -reconfigure
+
+        - name: Verify current state
+          run: |
+                terraform state pull | grep -E '"lineage"|"serial"' 
+
+        - name: terraform-plan
+          
+          env: 
+                TF_VAR_aws_key_arn: ${{ secrets.AWS_KEY_ARN }}
+                TF_VAR_aws_key_ecr_arn: ${{ secrets.AWS_SECRET_KEY }}
+                TF_VAR_cloudwatch_key_arn: ${{ secrets.CLOUDWATCH_KEY_ARN }}
+                TF_VAR_aws_account_id: ${{ secrets.AWS_ACCOUNT_ID }}
+                TF_VAR_eks_role_arn: ${{ secrets.EKS_ROLE_ARN }}
+                TF_VAR_flow_log_role_arn: ${{ secrets.FLOW_LOG_ROLE_ARN }}
+                TF_VAR_aws_iam_role_node_group_role_arn: ${{ secrets.AWS_IAM_ROLE_NODE_GROUP_ROLE_ARN }}
+                TF_VAR_database_url: ${{ secrets.TF_VAR_DATABASE_URL }}
+                
+          run: | 
+                 terraform plan -out=tfplan -input=false
+                
+              
+    
+        - name: change it to readable txt
+          run: terraform show -no-color tfplan > readable-plan1.txt
+
+        - name: Upload Terraform Plan
+          uses: actions/upload-artifact@v4
+          with:
+            name: tfplan
+            path: ./terraform/tfplan
+
+        - name: Upload Terraform Plan
+          uses: actions/upload-artifact@v4
+          with:
+            name: readable-plan1.txt
+            path: ./terraform/readable-plan1.txt
+
   terraform-deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs: terraform-check
     
     defaults:
       run:
@@ -36,16 +141,14 @@ jobs:
         with:
           name: tfplan
           path: downloaded-tfplan
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        
 
       - name: downloading tf plan
         uses: actions/download-artifact@v4
         with:
           name: readable-plan1.txt
           path: downloaded-readable-plan1.txt
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+  
 
       - name: configure aws
         uses: aws-actions/configure-aws-credentials@v4
