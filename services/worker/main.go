@@ -84,7 +84,7 @@ func pollAndProcess(ctx context.Context, queueURL string, services map[string]st
 	for {
 		select {
 		case <-ctx.Done():
-			log.Println("Worker stopped")
+			log.Println("Worker stopped successfully")
 			return
 		default:
 			messages := receiveSQSMessages(ctx, queueURL)
