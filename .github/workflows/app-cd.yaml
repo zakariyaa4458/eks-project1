@@ -6,7 +6,7 @@ run-name: app-cd pipeline by ${{ github.actor }}
 on:
   workflow_run:
     workflows:
-      - infrastructure pipeline
+      - ci pipeline
     types:
       - completed
     branches:
