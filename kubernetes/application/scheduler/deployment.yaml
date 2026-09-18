@@ -17,17 +17,13 @@ spec:
       maxUnavailable: 0
       maxSurge: 1
   replicas: 2
-  selector: 
-    matchLabels: 
+  selector:
+    matchLabels:
       app: scheduler
-    
-
-
   template:
     metadata:
       labels:
         app: scheduler
-
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -38,55 +34,48 @@ spec:
           type: RuntimeDefault
       serviceAccountName: scheduler-service-account
       containers:
-      - name: scheduler
-        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/scheduler:d3871de576a145717a665667415a7488143a2ec0-33
-        imagePullPolicy: Always
-        securityContext:
+        - name: scheduler
+          image: >-
+            499024813019.dkr.ecr.eu-west-2.amazonaws.com/scheduler:008bece1b4879322983613c98f6271a38fc0dbfe-125
+          imagePullPolicy: Always
+          securityContext:
             runAsNonRoot: true
             capabilities:
-              drop: ["ALL"]
+              drop:
+                - ALL
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-        ports:
-        - containerPort: 8091
-
-        volumeMounts:
-          - name: aws-secrets-store
-            mountPath: "/mnt/secrets-store/application"
-            readOnly: true
-
-        envFrom:
-          - secretRef:
-              name: application-secret
-          
-
-
-        resources:
-          requests:
-            memory: "115Mi"
-            cpu: "100m"
-          limits:
-            memory: "200Mi"
-            cpu: "250m"
-
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8091
-        
-          initialDelaySeconds: 3
-          periodSeconds: 3
-
-        readinessProbe:
-          tcpSocket:
-            port: 8091
-          initialDelaySeconds: 15
-          periodSeconds: 10
-
+          ports:
+            - containerPort: 8091
+          volumeMounts:
+            - name: aws-secrets-store
+              mountPath: /mnt/secrets-store/application
+              readOnly: true
+          envFrom:
+            - secretRef:
+                name: application-secret
+          resources:
+            requests:
+              memory: 115Mi
+              cpu: 100m
+            limits:
+              memory: 200Mi
+              cpu: 250m
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8091
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          readinessProbe:
+            tcpSocket:
+              port: 8091
+            initialDelaySeconds: 15
+            periodSeconds: 10
       volumes:
-       - name: aws-secrets-store
-         csi:
-           driver: secrets-store.csi.k8s.io
-           readOnly: true
-           volumeAttributes:
-             secretProviderClass: aws-secrets   
+        - name: aws-secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: aws-secrets

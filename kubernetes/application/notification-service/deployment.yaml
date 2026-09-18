@@ -10,7 +10,6 @@ metadata:
     checkov.io/skip1: CKV_K8S_43=I will add commits when I apply the aws infrastructure
     checkov.io/skip2: CKV_K8S_14=I will add commits when I apply the aws infrastructure
     checkov.io/skip3: CKV_K8S_35
-
 spec:
   strategy:
     type: RollingUpdate
@@ -18,16 +17,13 @@ spec:
       maxUnavailable: 0
       maxSurge: 1
   replicas: 2
-  selector: 
+  selector:
     matchLabels:
       app: notification-service
-
-
   template:
     metadata:
       labels:
         app: notification-service
-
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -38,54 +34,48 @@ spec:
           type: RuntimeDefault
       serviceAccountName: notification-service-service-account
       containers:
-      - name: notification-service
-        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/notification-service:7462cbe4ace480dd5d7d11c6756f2941227265b6-60
-        imagePullPolicy: Always
-        securityContext:
+        - name: notification-service
+          image: >-
+            499024813019.dkr.ecr.eu-west-2.amazonaws.com/notification-service:008bece1b4879322983613c98f6271a38fc0dbfe-125
+          imagePullPolicy: Always
+          securityContext:
             runAsNonRoot: true
             capabilities:
-              drop: ["ALL"]
+              drop:
+                - ALL
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-        ports:
-        - containerPort: 8084
-
-        volumeMounts:
-          - name: aws-secrets-store
-            mountPath: "/mnt/secrets-store/application"
-            readOnly: true
-        
-        envFrom:
-          - secretRef:
-              name: application-secret
-
-
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "250m"
-
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8084
-        
-          initialDelaySeconds: 120
-          periodSeconds: 3
-
-        readinessProbe:
-          tcpSocket:
-            port: 8084
-          initialDelaySeconds: 40
-          periodSeconds: 15
-
+          ports:
+            - containerPort: 8084
+          volumeMounts:
+            - name: aws-secrets-store
+              mountPath: /mnt/secrets-store/application
+              readOnly: true
+          envFrom:
+            - secretRef:
+                name: application-secret
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 100m
+            limits:
+              memory: 256Mi
+              cpu: 250m
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8084
+            initialDelaySeconds: 120
+            periodSeconds: 3
+          readinessProbe:
+            tcpSocket:
+              port: 8084
+            initialDelaySeconds: 40
+            periodSeconds: 15
       volumes:
-       - name: aws-secrets-store
-         csi:
-           driver: secrets-store.csi.k8s.io
-           readOnly: true
-           volumeAttributes:
-             secretProviderClass: aws-secrets    
+        - name: aws-secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: aws-secrets

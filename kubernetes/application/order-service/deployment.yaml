@@ -17,17 +17,14 @@ spec:
       maxUnavailable: 0
       maxSurge: 1
   replicas: 2
-  selector: 
+  selector:
     matchLabels:
       app: order-service
-
-
   template:
     metadata:
       labels:
         app: order-service
-
-    spec: 
+    spec:
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
@@ -37,56 +34,50 @@ spec:
           type: RuntimeDefault
       serviceAccountName: order-service-service-account
       containers:
-      - name: order-service
-        image: 499024813019.dkr.ecr.eu-west-2.amazonaws.com/order-service:4f4ff0b16367cc0a2db642f73658a0cab8461f7b-61
-        imagePullPolicy: Always
-        securityContext:
+        - name: order-service
+          image: >-
+            499024813019.dkr.ecr.eu-west-2.amazonaws.com/order-service:008bece1b4879322983613c98f6271a38fc0dbfe-125
+          imagePullPolicy: Always
+          securityContext:
             runAsNonRoot: true
             capabilities:
-              drop: ["ALL"]
+              drop:
+                - ALL
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-        ports:
-        - containerPort: 8081
-
-        volumeMounts:
-          - name: aws-secrets-store
-            mountPath: "/mnt/secrets-store/application"
-            readOnly: true
-
-        envFrom:
-          - secretRef:
-              name: application-secret
-          - secretRef:
-              name: application-secret-sqs
-
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "250m"
-
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8081
-      
-          initialDelaySeconds: 3
-          periodSeconds: 3
-
-        readinessProbe:
-          tcpSocket:
-            port: 8081
-
-          initialDelaySeconds: 15
-          periodSeconds: 10
-          
+          ports:
+            - containerPort: 8081
+          volumeMounts:
+            - name: aws-secrets-store
+              mountPath: /mnt/secrets-store/application
+              readOnly: true
+          envFrom:
+            - secretRef:
+                name: application-secret
+            - secretRef:
+                name: application-secret-sqs
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 100m
+            limits:
+              memory: 256Mi
+              cpu: 250m
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          readinessProbe:
+            tcpSocket:
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 10
       volumes:
-       - name: aws-secrets-store
-         csi:
-           driver: secrets-store.csi.k8s.io
-           readOnly: true
-           volumeAttributes:
-             secretProviderClass: aws-secrets        
+        - name: aws-secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: aws-secrets
