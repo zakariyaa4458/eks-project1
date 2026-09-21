@@ -11,6 +11,10 @@ A dev-ops project that deploys 9 services as part of an ecommerce app to AWS usi
 The objective of the project was to create and deploy highly available, secure and robust infrastructure for an ecommerce app on AWS. This project prioritized these aspects so
 architectural decisions were made to reflect this.
 
+## About the app
+
+This is an ecommerce app that it written in Golang, where a user can browse products and place an order through a web interface. When they submit an order, the application checks whether the requested products are available, processes the payment, creates the order and begins processing it in the background. The user can then see the order and its current status through the dashboard as it progresses through stages such as pending, confirmed, processing, shipped and delivered.
+
 ---
 
 ## Architecture Diagram
