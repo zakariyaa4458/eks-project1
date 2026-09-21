@@ -240,6 +240,12 @@ I used 3 availability zones with 2 Subnets (private and public) in each AZ to al
 
 I chose KEDA for the worker service because KEDA supports event-driven autoscaling. Rather than scaling based purely on CPU or memory utilisation, I can scale workers based on the actual workload, such as the number of messages waiting in the SQS queue. This better represents demand on an e-commerce platform. During periods such as Black Friday, Christmas or promotional sales, order volumes could increase significantly, causing the queue to grow. KEDA can respond by increasing the number of worker pods. During quieter periods, it can reduce the number of workers, helping reduce unnecessary compute usage." One reason I implemented KEDA over similar alternatives such as HPA is because it scales based on events as opposed to cpu usage. With CPU-based autoscaling, a large volume of malicious HTTP traffic could increase CPU utilisation and trigger additional replicas, potentially increasing infrastructure costs without corresponding to genuine customer demand. My KEDA configuration instead scales the Worker based on orders entering the SQS queue.
 
+## Separation of infrastructure and app pipeline
+I decided to create 2 pipeline 1 for infrastructure and 1 for app this is because creating 2 allows for changes in the terraform infrastructure to cause new images being created unnecessarily which would cause the ECR repository to become unnecessarily  filled with new images when the app remains the same, this allows for easier rollbacking as well as the images will only be created if a new app feature or an adjustment in the app is made.
+
+## Managing Secrets
+I implemented secret store csi driver and secret store csi driver provider aws. The secret store driver essentially mounts the secrets into the pod in kubernetes whilst secret store csi driver provider aws is essentially the plug-in which authenticates to aws and retrieves the secret for the aws secrets manager. In terms of secret rotation when a secret is rotated in AWS Secrets Manager, the new value is retrieved by the Secrets Store CSI Driver and AWS Provider and synchronized with the Kubernetes Secret. However, environment variables in already-running Pods do not automatically change, so the affected Pods must be restarted or rolled out to load the new value. For database passwords, the actual password in the database must also be changed to match the newly rotated secret.
+
 ---
 
 # Demo
@@ -283,6 +289,15 @@ https://youtu.be/0FEr9NLxj1M
 
 <img width="1423" height="290" alt="Pipeline-pic" src="https://github.com/user-attachments/assets/b07003ac-5956-4471-8070-6014889e4529" />
 
+---
+
+## Future Improvements
+
+### Database Migrations
+A future improvement would be to introduce a dedicated automated database migration process for managing PostgreSQL schema changes. Version-controlled migrations could be executed using a Kubernetes Job as part of the deployment process before a new application version becomes active. Since multiple services share the same database, migrations would be designed to remain backwards compatible, allowing both old and new application versions to operate during rolling deployments. Destructive changes, such as removing or renaming columns, could then be performed in a later migration after older application versions are no longer running. This would also improve rollback safety, as Argo CD could restore a previous application version without immediately becoming incompatible with the updated database schema.
+
+### Managed Databases
+To further improve this project I could implement database management services such as Amazon RDS or Elasticache to manage the responsibilities. For example provisioning the database server, replacing failed infrastructure, automated backups, patching options, monitoring integration and Multi-AZ failover when configured. This would improve the robustness of the infrastructure in many ways providing easier scaling, maintenance and patching as AWS would handle much of this, therefore reducing the amount of manual maintenance required compared with operating the database yourself inside Kubernetes. This would allow for less downtime and a faster and smoother service which would facilitate for greater revenue generation.
     
 
     
