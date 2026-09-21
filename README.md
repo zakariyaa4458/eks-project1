@@ -13,6 +13,12 @@ architectural decisions were made to reflect this.
 
 ---
 
+## Architecture Diagram
+<img width="1203" height="1308" alt="architecture_design" src="https://github.com/user-attachments/assets/603052a6-7cfe-4c6b-8f5f-6fabef5283f4" />
+
+
+---
+
 ## Technologies Used:
 
 - AWS
