@@ -18,7 +18,8 @@ This is an ecommerce app that it written in Golang, where a user can browse prod
 ---
 
 ## Architecture Diagram
-<img width="8920" height="9798" alt="eks4 drawio" src="https://github.com/user-attachments/assets/0aacf3cf-93d7-4fa2-96f4-d223103fdf6a" />
+<img width="8920" height="9798" alt="eks5 drawio" src="https://github.com/user-attachments/assets/8804b6d4-590c-4cd7-9ed4-7caae8a1307e" />
+
 
 
 
