@@ -292,7 +292,8 @@ https://youtu.be/0FEr9NLxj1M
 
 ## Pipeline
 
-<img width="1423" height="290" alt="Pipeline-pic" src="https://github.com/user-attachments/assets/b07003ac-5956-4471-8070-6014889e4529" />
+<img width="1418" height="195" alt="image" src="https://github.com/user-attachments/assets/7af92e15-a4e6-400d-b7ec-d99d52cc4855" />
+
 
 ---
 
