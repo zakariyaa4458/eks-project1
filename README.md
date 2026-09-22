@@ -293,6 +293,8 @@ https://youtu.be/0FEr9NLxj1M
 ## Pipeline
 
 <img width="1418" height="195" alt="image" src="https://github.com/user-attachments/assets/7af92e15-a4e6-400d-b7ec-d99d52cc4855" />
+<img width="1418" height="97" alt="image" src="https://github.com/user-attachments/assets/f6b94b40-ceae-4d12-9fef-167126bc85d1" />
+
 
 
 ---
