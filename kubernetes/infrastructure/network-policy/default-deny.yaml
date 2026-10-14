@@ -8,9 +8,7 @@ spec:
   policyTypes:
   - Ingress
   - Egress
-
 ---
-
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -21,10 +19,7 @@ spec:
   policyTypes:
   - Ingress
   - Egress
-
-
 ---
-
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -35,22 +30,7 @@ spec:
   policyTypes:
   - Ingress
   - Egress
-
 ---
-
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-deny-all
-  namespace: argocd
-spec:
-  podSelector: {}
-  policyTypes:
-  - Ingress
-  - Egress
-
----
-
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -61,5 +41,3 @@ spec:
   policyTypes:
   - Ingress
   - Egress
-
----

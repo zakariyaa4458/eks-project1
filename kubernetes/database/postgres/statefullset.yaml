@@ -4,20 +4,21 @@ metadata:
   name: postgres-statefulset3
   namespace: database-ns
   annotations:
-    checkov.io/skip1: CKV_K8S_14=I will add commits when I apply the apply the aws infrastructure
-    checkov.io/skip2: CKV_K8S_35 
+    checkov.io/skip1: CKV_K8S_14=I will add commits when I apply the apply the aws
+      infrastructure
+    checkov.io/skip2: CKV_K8S_35
     checkov.io/skip3: CKV_K8S_43=I will add commits when I apply the aws infrastructure
-    checkov.io/skip4: CKV_K8S_40= running as a high uid creates permission issues for postgres
+    checkov.io/skip4: CKV_K8S_40= running as a high uid creates permission issues
+      for postgres
     checkov.io/skip5: CKV_K8S_23= running as non-root causes postgres permission issues
     checkov.io/skip6: CKV_K8S_28
     checkov.io/skip7: CKV_K8S_25=
     checkov.io/skip8: CKV_K8S_37
-  
 spec:
   serviceName: postgres-service
   replicas: 1
   selector:
-    matchLabels: 
+    matchLabels:
       app: postgres
   template:
     metadata:
@@ -26,122 +27,87 @@ spec:
     spec:
       automountServiceAccountToken: false
       securityContext:
-       # runAsNonRoot: true
-        #runAsUser: 10000
-        #runAsGroup: 30000
         fsGroup: 30000
         seccompProfile:
           type: RuntimeDefault
       serviceAccountName: postgres-service-account
       priorityClassName: high-priority
       containers:
-          - name: postgres
-            image: postgres:16
-            imagePullPolicy: Always
-            securityContext:
-             # runAsNonRoot: true
-             # runAsUser: 10000
-             # runAsGroup: 30000
-              seccompProfile:
-                type: RuntimeDefault
-              capabilities:
-               # drop: 
-                #  - ALL
-                add:
-                  - CHOWN
-
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-
-            resources:
-              requests:
-          
-                memory: "128Mi"
-                cpu: "100m"
-              limits:
-                memory: "256Mi"
-                cpu: "250m"
-
-            readinessProbe:
-              tcpSocket:
-                port: 5432
-              initialDelaySeconds: 15
-              periodSeconds: 10
-
-            livenessProbe:
-              exec:
-                command:
-                  - pg_isready
-                  - -U
-                  - postgres
-        
-              initialDelaySeconds: 3
-              periodSeconds: 3
-
-            env:
-              - name: POSTGRES_PASSWORD
-                valueFrom:
-                  secretKeyRef: 
-                    name: postgres-secret
-                    key: POSTGRES_PASSWORD
-
-              - name: POSTGRES_USER
-                valueFrom:
-                  configMapKeyRef:
-                    name: postgres-config
-                    key: POSTGRES_USER
-
-              - name: POSTGRES_DB
-                valueFrom:
-                  configMapKeyRef:
-                    name: postgres-config
-                    key: POSTGRES_DB
-                  
-                
-                
-            volumeMounts:
-              - name: postgres-data
-                mountPath: /var/lib/postgresql/data
-
-              - name: tmp
-                mountPath: /tmp
-
-              - name: postgres-run
-                mountPath: /var/run/postgresql
-
-              - name: secrets-store
-                mountPath: "/mnt/secrets-store"
-                readOnly: true
-
-             
-
-      volumes:
-        - name: tmp
-          emptyDir:
-            sizeLimit: 128Mi
-
-        - name: postgres-run
-          emptyDir:
-            sizeLimit: 128Mi
-
-   
-        - name: secrets-store
-          csi:
-            driver: secrets-store.csi.k8s.io
-            readOnly: true
-            volumeAttributes:
-              secretProviderClass: "postgres-secret-provider"
-     
-  volumeClaimTemplates:
-     - metadata: 
-        name: postgres-data
-       spec: 
-        storageClassName: ebs-sc
-        accessModes:
-          - ReadWriteOnce
-
+      - name: postgres
+        image: postgres:16
+        imagePullPolicy: Always
+        securityContext:
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            add:
+            - CHOWN
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
         resources:
           requests:
-            storage: 20Gi
-
-          
+            memory: 128Mi
+            cpu: 100m
+          limits:
+            memory: 256Mi
+            cpu: 250m
+        readinessProbe:
+          tcpSocket:
+            port: 5432
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-config
+              key: POSTGRES_USER
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-config
+              key: POSTGRES_DB
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+        - name: tmp
+          mountPath: /tmp
+        - name: postgres-run
+          mountPath: /var/run/postgresql
+        startupProbe:
+          tcpSocket:
+            port: 5432
+          periodSeconds: 5
+          failureThreshold: 60
+      volumes:
+      - name: tmp
+        emptyDir:
+          sizeLimit: 128Mi
+      - name: postgres-run
+        emptyDir:
+          sizeLimit: 128Mi
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-data
+    spec:
+      storageClassName: ebs-sc
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 20Gi

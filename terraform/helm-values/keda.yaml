@@ -5,5 +5,5 @@ podIdentity:
   aws:
     irsa:
       enabled: true
-      roleArn: arn:aws:iam::499024813019:role/keda-iam-role
+      roleArn: arn:aws:iam::241533156847:role/keda-iam-role
   

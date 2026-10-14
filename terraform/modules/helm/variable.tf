@@ -17,10 +17,6 @@ variable "aws_eks_cluster_eks_cluster_name" {
   
 }
 
-variable "module_external_dns" {
-  #type = string
-}
-
 variable "module_aws_load_balancer_controller" {
    # type = string
   

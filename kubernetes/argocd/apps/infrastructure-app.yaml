@@ -3,19 +3,20 @@ kind: Application
 metadata:
   name: infrastructure
   namespace: argo-cd
-
+  annotations:
+    argocd.argoproj.io/sync-wave: '-20'
 spec:
   project: default
-
   source:
-    repoURL: https://github.com/zakariyaa4458/eks-project1
+    repoURL: https://github.com/anhhao1712/eks-project1.git
     targetRevision: main
     path: kubernetes/infrastructure
-
+    directory:
+      recurse: true
+      exclude: '{volumes-snapshot.yaml,karpenter/**,namespaces/argocd-ns.yaml,namespaces/application.yaml,namespaces/database.yaml}'
   destination:
     server: https://kubernetes.default.svc
     namespace: default
-
   syncPolicy:
     automated:
       prune: true

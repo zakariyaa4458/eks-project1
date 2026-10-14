@@ -1,251 +1,223 @@
 name: app-cd pipeline
-# builds and tags docker images to ecr repos and updates manifests image tags and commits and pushs the manifest change
 
-run-name: app-cd pipeline by ${{ github.actor }}
+run-name: Build and publish AWS images by ${{ github.actor }}
 
 on:
-  workflow_run:
-    workflows:
-      - ci pipeline
-    types:
-      - completed
-    branches:
-      - main
-  
   workflow_dispatch:
 
 permissions:
-  id-token: write
-  contents: write
-  
+  contents: read
+
+concurrency:
+  group: eks-project1-terraform
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  AWS_ACCOUNT_ID: "241533156847"
+  ECR_PREFIX: eks-project1
+  IMAGE_TAG: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
 
 jobs:
-
-  prepare:
+  check-branch:
     runs-on: ubuntu-latest
-
-    outputs:
-      image_tag: ${{ steps.tag.outputs.image_tag }}
-
+    timeout-minutes: 2
     steps:
-      - name: Determine image tag
-        id: tag
+      - name: Require the main branch
+        env:
+          SELECTED_REF: ${{ github.ref }}
         run: |
-           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-           SHA="${{ github.sha }}"
-           else
-           SHA="${{ github.event.workflow_run.head_sha }}"
-           fi
+          if [ "$SELECTED_REF" != "refs/heads/main" ]; then
+            echo "::error::Run this workflow on the main branch."
+            exit 1
+          fi
 
-           echo "image_tag=${SHA}-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+  checks:
+    needs: check-branch
+    uses: ./.github/workflows/ci.yaml
 
-  build-push-docker-images:
-    needs: prepare
+  aws-preflight:
+    needs: checks
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
-
-
-    strategy:
-        matrix:
-          service:
-            - api-gateway
-            - dashboard-api
-            - inventory-service
-            - notification-service
-            - order-service
-            - payment-service
-            - scheduler
-            - shipping-service
-            - worker
-
+    timeout-minutes: 5
     steps:
-              
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
-
-      - name: Configure AWS credentials
+      - name: Authenticate with AWS session credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-           role-to-assume: arn:aws:iam::499024813019:role/githubs-action-EcrPushRole
-           aws-region: eu-west-2
-
-      - name: login to amazon ecr
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build Docker image
-
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+          allowed-account-ids: ${{ env.AWS_ACCOUNT_ID }}
+      - name: Verify all nine ECR repositories exist
+        shell: bash
         run: |
-              docker build \
-               -t 499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ needs.prepare.outputs.image_tag }} \
-               ./services/${{ matrix.service }}
+          set -euo pipefail
+          services=(api-gateway dashboard-api inventory-service notification-service order-service payment-service scheduler shipping-service worker)
+          repositories=()
+          for service in "${services[@]}"; do
+            repositories+=("${ECR_PREFIX}/${service}")
+          done
+          aws ecr describe-repositories \
+            --region "$AWS_REGION" \
+            --repository-names "${repositories[@]}" \
+            --query 'repositories[].repositoryName' \
+            --output text
 
-
-      - name: Scan image with Trivy
+  build-images:
+    needs: aws-preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        service:
+          - api-gateway
+          - dashboard-api
+          - inventory-service
+          - notification-service
+          - order-service
+          - payment-service
+          - scheduler
+          - shipping-service
+          - worker
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Authenticate with AWS session credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+          allowed-account-ids: ${{ env.AWS_ACCOUNT_ID }}
+      - name: Login to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build image
+        id: image
+        env:
+          ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
+          SERVICE: ${{ matrix.service }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          image="${ECR_REGISTRY}/${ECR_PREFIX}/${SERVICE}:${IMAGE_TAG}"
+          docker build \
+            --file "services/${SERVICE}/Dockerfile" \
+            --tag "$image" \
+            "services/${SERVICE}"
+          echo "uri=$image" >> "$GITHUB_OUTPUT"
+      - name: Scan image vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: '499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ needs.prepare.outputs.image_tag }}'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-
-          
-        
-
-      - name: push docker image
+          image-ref: ${{ steps.image.outputs.uri }}
+          format: table
+          exit-code: "1"
+          severity: HIGH,CRITICAL
+          scanners: vuln
+      - name: Push verified image
+        env:
+          IMAGE_URI: ${{ steps.image.outputs.uri }}
+          SERVICE: ${{ matrix.service }}
+        shell: bash
         run: |
-              docker push \
-              499024813019.dkr.ecr.eu-west-2.amazonaws.com/${{ matrix.service }}:${{ needs.prepare.outputs.image_tag }} \       
+          set -euo pipefail
+          image="$IMAGE_URI"
+          docker push "$image"
+          printf '### %s\n`%s`\n' "$SERVICE" "$image" >> "$GITHUB_STEP_SUMMARY"
 
   update-manifests:
-    needs:
-      - prepare
-      - build-push-docker-images
-    runs-on: ubuntu-latest  
- 
-    outputs:
-      manifest_commit_sha: ${{ steps.manifest_commit.outputs.commit_sha }}
-
-    steps:
-
-    - name: checkout
-      uses: actions/checkout@v4
-      with:
-        ref: main
-  
-
-    - name: Update the image tag in the relevant Kubernetes Deployment manifest. 
-      uses: Charlyzzz/update-k8s-image@v1.7.1
-      with:
-        manifest-path: kubernetes/application/api-gateway/deployment.yaml
-        new-image-tag: ${{ needs.prepare.outputs.image_tag }}
-        container-name: api-gateway
-
-    - name: Update the image tag in the relevant Kubernetes Deployment manifest.
-      uses: Charlyzzz/update-k8s-image@v1.7.1
-      with:
-        manifest-path: kubernetes/application/dashboard-api/deployment.yaml
-        new-image-tag: ${{ needs.prepare.outputs.image_tag }}
-        container-name: dashboard-api
-
-    - name: Check manifest change
-      run: |
-             grep "image:" kubernetes/application/inventory-service/deployment.yaml
-             git diff
-
-    - name: Update the image tag in the relevant Kubernetes Deployment manifest.
-      uses: Charlyzzz/update-k8s-image@v1.7.1
-      with:
-        manifest-path: kubernetes/application/inventory-service/deployment.yaml
-        new-image-tag: ${{ needs.prepare.outputs.image_tag }}
-        container-name: inventory-service
-
-    - name: Update the image tag in the relevant Kubernetes Deployment manifest.
-      uses: Charlyzzz/update-k8s-image@v1.7.1
-      with:
-        manifest-path: kubernetes/application/notification-service/deployment.yaml
-        new-image-tag: ${{ needs.prepare.outputs.image_tag }}
-        container-name: notification-service
-
-    - name: Update the image tag in the relevant Kubernetes Deployment manifest.
-      uses: Charlyzzz/update-k8s-image@v1.7.1
-      with:
-        manifest-path: kubernetes/application/order-service/deployment.yaml
-        new-image-tag: ${{ needs.prepare.outputs.image_tag }}
-        container-name: order-service
-
-    - name: Update the image tag in the relevant Kubernetes Deployment manifest.
-      uses: Charlyzzz/update-k8s-image@v1.7.1
-      with:
-        manifest-path: kubernetes/application/payment-service/deployment.yaml
-        new-image-tag: ${{ needs.prepare.outputs.image_tag }}
-        container-name: payment-service
-
-
-    - name: Update the image tag in the relevant Kubernetes Deployment manifest.
-      uses: Charlyzzz/update-k8s-image@v1.7.1
-      with:
-        manifest-path: kubernetes/application/scheduler/deployment.yaml
-        new-image-tag: ${{ needs.prepare.outputs.image_tag }}
-        container-name: scheduler 
-
-    - name: Update the image tag in the relevant Kubernetes Deployment manifest.
-      uses: Charlyzzz/update-k8s-image@v1.7.1
-      with:
-        manifest-path: kubernetes/application/shipping-service/deployment.yaml
-        new-image-tag: ${{ needs.prepare.outputs.image_tag }}
-        container-name: shipping-service
-
-    - name: Update the image tag in the relevant Kubernetes Deployment manifest.
-      uses: Charlyzzz/update-k8s-image@v1.7.1
-      with:
-        manifest-path: kubernetes/application/worker/deployment.yaml
-        new-image-tag: ${{ needs.prepare.outputs.image_tag }}
-        container-name: worker
-
-    - name: setting up gitHub then creating git commit and pushing it to gitHub
-      id: manifest_commit
-      run: |
-          git config --global user.email "zakariya.a4458@gmail.com"
-          git config --global user.name "zakariyaa4458"
-          git add kubernetes/
-          git commit -m "new commits for updated manifests"
-          echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-          git push
-
-  Rollback-Steps:
-    needs: update-manifests
+    needs: build-images
     runs-on: ubuntu-latest
-
+    timeout-minutes: 10
+    permissions:
+      contents: write
     steps:
+      - name: Checkout the exact source version that was built
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - name: Verify main has not changed during the build
+        env:
+          BUILT_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$BUILT_SHA" ]; then
+            echo "::error::main changed during the build. Run the workflow again on the new main commit. No manifests were pushed."
+            exit 1
+          fi
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install the YAML parser
+        run: python -m pip install PyYAML==6.0.2
+      - name: Update application image references
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import yaml
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: arn:aws:iam::499024813019:role/github-eks-rollout
-        aws-region: eu-west-2
+          services = [
+              "api-gateway", "dashboard-api", "inventory-service",
+              "notification-service", "order-service", "payment-service",
+              "scheduler", "shipping-service", "worker",
+          ]
+          registry = f"{os.environ['AWS_ACCOUNT_ID']}.dkr.ecr.{os.environ['AWS_REGION']}.amazonaws.com"
+          prefix = os.environ["ECR_PREFIX"]
+          tag = os.environ["IMAGE_TAG"]
+          changes = []
 
-    - name: Configure kubectl
-      run: |
-         aws eks update-kubeconfig \
-         --region eu-west-2 \
-         --name eks-cluster
+          for service in services:
+              path = Path("kubernetes/application") / service / "deployment.yaml"
+              if not path.is_file():
+                  raise SystemExit(f"Missing deployment manifest: {path}")
+              documents = list(yaml.safe_load_all(path.read_text(encoding="utf-8")))
+              deployments = [
+                  document for document in documents
+                  if isinstance(document, dict) and document.get("kind") == "Deployment"
+              ]
+              if len(deployments) != 1:
+                  raise SystemExit(f"Expected one Deployment in {path}; found {len(deployments)}")
+              containers = deployments[0]["spec"]["template"]["spec"]["containers"]
+              candidates = [
+                  container for container in containers
+                  if container.get("name") == service
+                  or str(container.get("image", "")).rsplit("/", 1)[-1].split("@", 1)[0].split(":", 1)[0] == service
+              ]
+              if not candidates and len(containers) == 1:
+                  candidates = containers
+              if len(candidates) != 1:
+                  raise SystemExit(f"Could not uniquely identify the application container in {path}")
+              candidates[0]["image"] = f"{registry}/{prefix}/{service}:{tag}"
+              changes.append((path, documents, candidates[0]["image"]))
 
-    - name: Wait for ArgoCD
-      run: sleep 45
-  
-    - name: Verify rollout
-      id: rollout
-      continue-on-error: true
-      run: |
-            kubectl rollout status deployment/api-gateway-deployment -n application-namespace --timeout=3m
-            kubectl rollout status deployment/dashboard-api-deployment -n application-namespace --timeout=3m
-            kubectl rollout status deployment/inventory-service-deployment -n application-namespace --timeout=3m
-            kubectl rollout status deployment/notification-service-deployment -n application-namespace --timeout=3m
-            kubectl rollout status deployment/order-service-deployment -n application-namespace --timeout=3m
-            kubectl rollout status deployment/payment-service-deployment -n application-namespace --timeout=3m
-            kubectl rollout status deployment/scheduler-deployment -n application-namespace --timeout=3m
-            kubectl rollout status deployment/shipping-service-deployment -n application-namespace --timeout=3m
-            kubectl rollout status deployment/worker-deployment -n application-namespace --timeout=3m
-
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        ref: main
-        fetch-depth: 0
-
-    - name: Configure Git
-      if: steps.rollout.outcome == 'failure'
-      run: |
-          git config user.email "zakariya.a4458@gmail.com"
-          git config user.name "zakariyaa4458"
-
-    - name: Rollback failed deployment
-      if: steps.rollout.outcome == 'failure'
-      run: |
-            git revert --no-edit ${{ needs.update-manifests.outputs.manifest_commit_sha }}
-            git push origin main
+          for path, documents, image in changes:
+              path.write_text(
+                  yaml.safe_dump_all(documents, sort_keys=False, allow_unicode=True),
+                  encoding="utf-8",
+              )
+              print(f"Updated {path}: {image}")
+          PY
+      - name: Commit and push manifests for Argo CD
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add kubernetes/application
+          if git diff --cached --quiet; then
+            echo "No manifest changes to publish."
+            exit 0
+          fi
+          git commit -m "Deploy AWS images ${IMAGE_TAG}"
+          git push origin HEAD:main
+          echo "Updated application manifests on main. Argo CD can now sync this revision." >> "$GITHUB_STEP_SUMMARY"

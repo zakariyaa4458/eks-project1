@@ -9,7 +9,7 @@ resource "aws_security_group" "Eks-control-plane-sg" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "ingress-control-plane-rule" {
-  description = "allowing only secure communication over https to communicate with the worker nodes"
+  description       = "allowing only secure communication over https to communicate with the worker nodes"
   region            = var.region
   security_group_id = aws_security_group.Eks-control-plane-sg.id
   cidr_ipv4         = var.aws_vpc_id_cidr_block
@@ -19,7 +19,7 @@ resource "aws_vpc_security_group_ingress_rule" "ingress-control-plane-rule" {
 }
 
 resource "aws_vpc_security_group_egress_rule" "egress-control-plane-rule" {
-  description = "egress rule allowing all outbound traffic out the control plane"
+  description       = "egress rule allowing all outbound traffic out the control plane"
   region            = var.region
   security_group_id = aws_security_group.Eks-control-plane-sg.id
   cidr_ipv4         = "0.0.0.0/0"
@@ -35,7 +35,7 @@ resource "aws_security_group" "Eks-worker-node-sg" {
   name        = "sg for worker-nodes"
   description = "Security group for the EKS worker nodes, allowing secure communication between the cluster control plane and other resources"
   vpc_id      = var.aws_vpc_id
- 
+
   tags = {
 
     "karpenter.sh/discovery" = "eks-cluster"
@@ -45,7 +45,7 @@ resource "aws_security_group" "Eks-worker-node-sg" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "ingress_worker_node_rule" {
-  description = "ingress rule allowing secure communication over https for traffic comming to the worker node"
+  description       = "ingress rule allowing secure communication over https for traffic comming to the worker node"
   region            = var.region
   security_group_id = aws_security_group.Eks-worker-node-sg.id
   cidr_ipv4         = var.aws_vpc_id_cidr_block
@@ -82,28 +82,29 @@ resource "aws_vpc_security_group_egress_rule" "egress_worker_node_rule" {
   security_group_id = aws_security_group.Eks-worker-node-sg.id
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "-1" # semantically equivalent to all ports
-  description = "egress rule allowing all outbound traffic out the worker nodes"
+  description       = "egress rule allowing all outbound traffic out the worker nodes"
 }
 
 resource "aws_vpc_security_group_ingress_rule" "ingress_worker_to_worker_node_rule" {
-  region            = var.region
+  region                       = var.region
   referenced_security_group_id = aws_security_group.Eks-worker-node-sg.id
-  security_group_id = aws_security_group.Eks-worker-node-sg.id
-  ip_protocol = "-1"
-  description = "allows communication between worker nodes"
+  security_group_id            = aws_security_group.Eks-worker-node-sg.id
+  ip_protocol                  = "-1"
+  description                  = "allows communication between worker nodes"
 }
 
 resource "aws_vpc_security_group_ingress_rule" "ingress_control_plane_to_eks_worker_node_rule" {
-  region            = var.region
+  region                       = var.region
   referenced_security_group_id = aws_security_group.Eks-control-plane-sg.id
-  security_group_id = aws_security_group.Eks-worker-node-sg.id
-  from_port = 9443
-  ip_protocol = "tcp"
-  to_port = 9443
-  description = "allows communication between worker nodes and the control plane"
+  security_group_id            = aws_security_group.Eks-worker-node-sg.id
+  from_port                    = 9443
+  ip_protocol                  = "tcp"
+  to_port                      = 9443
+  description                  = "allows communication between worker nodes and the control plane"
 }
 
 resource "aws_flow_log" "flow_log" {
+  count           = var.enable_flow_logs ? 1 : 0
   iam_role_arn    = var.flow_log_role_arn
   log_destination = aws_cloudwatch_log_group.flow_log_group.arn
   traffic_type    = "ALL"
@@ -114,24 +115,26 @@ resource "aws_cloudwatch_log_group" "flow_log_group" {
   name = "flow-log-cloudwatch-group"
   #arn = "arn:aws:logs:${var.region}:${var.aws_account_id}:log-group:flow-log-cloudwatch-group"
 
-  
-  
-  kms_key_id = var.cloudwatch_key_arn
+
+
+  kms_key_id        = var.cloudwatch_key_arn
   retention_in_days = "365"
 
   tags = {
     Environment = "production"
-    
+
   }
 }
 
 resource "aws_secretsmanager_secret" "database_url" {
-  name = "database_url"
-  
+  name                    = "database_url"
+  recovery_window_in_days = 0
+
 }
 
 resource "aws_secretsmanager_secret_version" "database_url_secret_version" {
+  count         = var.database_url == null ? 0 : 1
   secret_id     = aws_secretsmanager_secret.database_url.id
-  secret_string = jsonencode (var.database_url)
+  secret_string = jsonencode(var.database_url)
 
 }

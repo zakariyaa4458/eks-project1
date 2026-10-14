@@ -1,0 +1,268 @@
+HƯỚNG DẪN DEPLOY TỪ ĐẦU ĐẾN CUỐI — AWS LEARNER LAB
+Repo: https://github.com/anhhao1712/eks-project1
+Account: 425959969184 | Region: us-east-1 | Cluster: eks-cluster
+
+Chạy các lệnh trong AWS CloudShell của phiên Lab đang hoạt động.
+Đã có Terraform, AWS CLI, kubectl, Python 3; không cần cài lại.
+Chép phần bên trong từng khối lệnh. Không chép dấu nhắc “eks-deploy $”.
+Chạy theo thứ tự, dùng cùng một CloudShell; gặp lỗi thì dừng ở lệnh đó.
+Nếu dashboard hiện đang chạy, chỉ cần phần 10 khi muốn xóa, chưa cần deploy lại.
+
+1. MỞ PHIÊN LAB VÀ LẤY SOURCE
+
+Start Lab, mở AWS Console rồi mở CloudShell trong region us-east-1.
+Nếu CHƯA có ~/eks-deploy, chạy:
+```bash
+git clone https://github.com/anhhao1712/eks-project1.git ~/eks-deploy
+```
+Tải source về ~/eks-deploy. Chỉ clone một lần; thư mục đã có thì bỏ qua lệnh này.
+
+```bash
+cd ~/eks-deploy
+```
+Đi vào thư mục gốc của repo. Các lệnh -chdir=terraform bên dưới cần chạy từ đây.
+
+```bash
+git pull --ff-only
+```
+Lấy code mới nhất, gồm bản sửa EBS CSI và cấu hình Learner Lab.
+Không chạy lại workflow trên commit cũ; không push thêm lúc app-cd đang build.
+
+2. ĐẶT REGION VÀ BUCKET STATE
+
+```bash
+export AWS_REGION=us-east-1
+```
+Chọn region cho AWS CLI, giống region trong Terraform và manifest.
+
+```bash
+export AWS_DEFAULT_REGION=us-east-1
+```
+Đặt region mặc định cho các công cụ AWS đọc biến này.
+
+```bash
+export AWS_PAGER=""
+```
+Cho kết quả AWS CLI hiện trực tiếp, tránh bị giữ trong màn hình phân trang.
+
+```bash
+export STATE_BUCKET=eks-project1-tfstate-425959969184-us-east-1
+```
+Chọn bucket state của bản deploy hiện tại. Luôn dùng cùng bucket cho cả hai phần Terraform.
+Không chuyển sang bucket cũ eks-project1-state-425959969184-1791478850.
+
+3. TẠO BUCKET STATE — CHỈ KHI BUCKET ĐÃ BỊ XÓA HOẶC CHƯA CÓ
+
+Nếu đang tiếp tục bản deploy hiện tại và bucket vẫn tồn tại, bỏ qua lệnh create-bucket.
+```bash
+aws s3api create-bucket --bucket "$STATE_BUCKET" --region us-east-1
+```
+Tạo bucket trước khi terraform init. Tránh lỗi NoSuchBucket hoặc bucket placeholder.
+Tên bucket này dành cho account hiện tại; không dùng cho account khác.
+
+```bash
+aws s3api put-bucket-versioning --bucket "$STATE_BUCKET" --versioning-configuration Status=Enabled
+```
+Lưu các phiên bản state để có lịch sử thay đổi.
+
+```bash
+aws s3api put-public-access-block --bucket "$STATE_BUCKET" --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+```
+Chặn truy cập public vào bucket. State có dữ liệu secrets và credentials của ứng dụng.
+
+4. KHỞI TẠO TERRAFORM CHO HẠ TẦNG AWS
+
+```bash
+export TF_DATA_DIR=/tmp/eks-tf-infra
+```
+Đặt provider/module vào /tmp, tránh đầy thư mục home như trước.
+Đây là thư mục cho phần hạ tầng, khác với phần platform ở bước 7.
+
+```bash
+mkdir -p "$TF_DATA_DIR"
+```
+Tạo thư mục nếu chưa có.
+
+```bash
+terraform -chdir=terraform init -reconfigure -backend-config="bucket=$STATE_BUCKET"
+```
+Đọc cấu hình terraform/, tải provider/module và kết nối bucket state đã chọn.
+Chưa tạo EKS ở lệnh này. Cần init lại nếu /tmp mất sau khi CloudShell đổi phiên.
+
+5. TẠO HẠ TẦNG AWS
+
+```bash
+terraform -chdir=terraform apply -var-file=learner-lab.tfvars
+```
+Tạo VPC, EKS, 3 worker node, ECR, SQS, secrets, NLB và các tài nguyên trong state hạ tầng.
+Dùng LabRole có sẵn; không tạo IAM role/IRSA mới. Nhập yes khi Terraform hỏi.
+
+Đợi “Apply complete!”. EKS/node có thể mất nhiều phút.
+Chưa cài Argo CD và chưa chạy ứng dụng ở bước này.
+
+CHỈ NẾU BÁO database_url ĐANG CHỜ XÓA:
+Giữ TF_DATA_DIR=/tmp/eks-tf-infra và backend đã init ở bước 4.
+```bash
+aws secretsmanager restore-secret --secret-id database_url --region us-east-1
+```
+Khôi phục secret cũ đang chờ xóa để AWS cho phép sử dụng lại.
+
+```bash
+SECRET_ARN=$(aws secretsmanager describe-secret --secret-id database_url --region us-east-1 --query ARN --output text)
+```
+Lấy ARN thật của secret. Terraform import cần ARN, không dùng tên database_url làm ID.
+
+```bash
+terraform -chdir=terraform import -var-file=learner-lab.tfvars module.security.aws_secretsmanager_secret.database_url "$SECRET_ARN"
+```
+Đưa secret cũ vào state hạ tầng. Nếu báo đã thuộc state thì không import lại.
+
+```bash
+terraform -chdir=terraform apply -var-file=learner-lab.tfvars
+```
+Tiếp tục phần apply bị ngắt. Tài nguyên đã tạo và có trong state được dùng lại.
+
+6. BUILD IMAGE BẰNG GITHUB ACTIONS
+
+Trên GitHub repo → Settings → Secrets and variables → Actions:
+Cập nhật 3 repository secrets từ AWS Details → AWS CLI của phiên Lab hiện tại:
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- AWS_SESSION_TOKEN
+Ba giá trị này cho GitHub runner dùng AWS; không tự cấu hình CloudShell hoặc máy Windows.
+
+Vào Actions → app-cd pipeline → Run workflow → chọn main → Run workflow.
+Đợi workflow xanh hoàn toàn, gồm job update-manifests.
+Workflow build 9 image, push ECR, rồi commit các image tag vào manifest để Argo đọc.
+Không push commit mới trong lúc build: nếu main đổi, guard sẽ dừng update-manifests.
+Nếu đã gặp lỗi “main changed during the build”, chọn Run workflow mới trên main hiện tại.
+
+```bash
+git pull --ff-only
+```
+Lấy commit manifest mà workflow vừa push. Chạy sau khi app-cd đã xanh.
+
+7. CHUẨN BỊ VÀ KHỞI TẠO TERRAFORM PLATFORM
+
+```bash
+export TF_VAR_platform_config="$(TF_DATA_DIR=/tmp/eks-tf-infra terraform -chdir=terraform output -json platform_config)"
+```
+Lấy thông tin EKS, ARN secret và SQS từ state hạ tầng cho Terraform platform.
+Lệnh chỉ đọc output; không tạo hoặc sửa tài nguyên.
+
+```bash
+export TF_VAR_sqs_credentials="$(aws configure export-credentials --format process)"
+```
+Lấy credentials của phiên CloudShell hiện tại để Terraform tạo Kubernetes Secret cho SQS.
+Không chép credentials vào code hay Git.
+
+```bash
+aws eks update-kubeconfig --name eks-cluster --region us-east-1
+```
+Cấu hình kubectl kết nối cluster vừa tạo. Dùng cùng danh tính CloudShell đã tạo EKS.
+
+```bash
+export TF_DATA_DIR=/tmp/eks-tf-platform
+```
+Chuyển thư mục provider/module sang phần platform. State platform có key riêng trong cùng bucket.
+
+```bash
+mkdir -p "$TF_DATA_DIR"
+```
+Tạo thư mục chứa provider/module của platform.
+
+```bash
+terraform -chdir=terraform/platform init -reconfigure -backend-config="bucket=$STATE_BUCKET"
+```
+Tải provider và kết nối state platform. Không dùng state này để import tài nguyên hạ tầng.
+
+8. CÀI PLATFORM VÀ ĐỂ ARGO CD DEPLOY
+
+```bash
+terraform -chdir=terraform/platform apply
+```
+Cài EBS CSI, Argo CD, tạo namespaces/secrets và root-app. Nhập yes khi được hỏi.
+Root-app tạo các app infrastructure/database/application; Argo tự triển khai manifest từ main.
+
+Bản code hiện tại đã sửa các lỗi từng gặp:
+- EBS CSI: dùng Helm post-renderer đặt hostNetwork/DNS đúng vào Pod spec, không truyền value sai schema.
+- Argo CD: Helm cấu hình đúng namespace argo-cd và RBAC, không cần vá quyền thủ công.
+- Scheduling: giữ 3 node để đủ chỗ cho 2 replica của các service.
+- Secrets: Terraform tạo Kubernetes Secrets; không dùng CSI secrets/IRSA của tác giả.
+
+Không cài EBS managed add-on hoặc Argo bằng kubectl song song với Terraform.
+Không chạy load-lab-secrets.py để ghi đè secrets do Terraform quản lý.
+Apply complete nghĩa là platform đã tạo; ứng dụng cần thêm thời gian khởi động.
+
+9. MỞ DASHBOARD PUBLIC
+
+```bash
+TF_DATA_DIR=/tmp/eks-tf-infra terraform -chdir=terraform output -raw dashboard_url
+```
+In URL NLB của lần deploy này. Copy URL và mở trong trình duyệt, người khác cũng truy cập được.
+Không cần port-forward, PowerShell hoặc domain. NLB tạo lại có thể đổi URL.
+
+Luồng hoạt động: Terraform tạo AWS/platform → Actions build image/cập nhật manifest
+→ Argo CD triển khai → NLB port 80 → NodePort 30086 → dashboard-api.
+
+10. XÓA SẠCH BẢN DEPLOY HIỆN TẠI BẰNG MỘT SCRIPT
+
+Dữ liệu PostgreSQL/Redis, image ECR và lịch sử state của bucket này sẽ bị xóa.
+Dừng/đợi các workflow deploy/build đang chạy trước khi xóa, tránh chúng tạo lại tài nguyên.
+Script chỉ dọn dự án hiện tại; giữ LabRole, repo và tài nguyên cũ không nằm trong state này.
+
+```bash
+cd ~/eks-deploy
+```
+Đi vào repo để gọi script.
+
+```bash
+git pull --ff-only
+```
+Lấy bản script mới nhất.
+
+```bash
+export STATE_BUCKET=eks-project1-tfstate-425959969184-us-east-1
+```
+Chỉ rõ bucket state của bản deploy cần xóa.
+
+```bash
+bash scripts/destroy-lab-all.sh
+```
+Tự init hai state, xóa Argo apps/namespaces, đợi EBS được dọn rồi destroy platform và AWS.
+Sau khi cả hai destroy thành công, xóa mọi phiên bản/object trong bucket rồi xóa bucket.
+Script tự approve destroy; không chạy lệnh này nếu còn cần dữ liệu.
+
+Nếu script lỗi, dừng và gửi lỗi; bucket state được giữ nếu Terraform destroy chưa thành công.
+Sau khi xóa thành công, deploy lại từ bước 1 và tạo bucket mới ở bước 3.
+
+11. KHI ĐỔI PHIÊN LAB NHƯNG GIỮ CLUSTER
+
+```bash
+cd ~/eks-deploy
+```
+Đi vào repo trong CloudShell của phiên Lab mới.
+
+```bash
+export STATE_BUCKET=eks-project1-tfstate-425959969184-us-east-1
+```
+Giữ nguyên bucket của cluster đang chạy; không tạo state mới.
+
+```bash
+bash scripts/deploy-lab.sh refresh
+```
+Tự init, cập nhật credentials SQS qua Terraform và restart 4 deployment gọi SQS.
+Giữ mật khẩu PostgreSQL trong state hiện có. Cập nhật 3 GitHub secrets trước lần build tiếp theo.
+
+FILE CODE NÊN ĐỌC ĐỂ HIỂU DEPLOY
+- terraform/learner-lab.tfvars: region, account, LabRole và số node.
+- terraform/main.tf + terraform/modules/: hạ tầng AWS.
+- terraform/internet.tf: NLB, target group, NodePort và URL public.
+- terraform/platform/main.tf: EBS, Argo CD, secrets và bootstrap.
+- terraform/platform/ebs-postrender.py: cấu hình mạng controller EBS sau khi Helm render.
+- .github/workflows/app-cd.yaml: build/push image và cập nhật manifest.
+- kubernetes/argocd/root-app.yaml + apps/: Argo đọc repo/path nào.
+- kubernetes/application/: Deployment, Service, image, env và probes.
+- kubernetes/database/: PostgreSQL, Redis và PVC.
+- scripts/deploy-lab.sh: điều phối infra/platform/refresh/destroy.
+- scripts/destroy-lab-all.sh: xóa bản deploy và bucket state hiện tại.

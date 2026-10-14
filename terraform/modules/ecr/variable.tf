@@ -7,11 +7,16 @@ variable "app_ecr_repo" {
 
 variable "region" {
   type    = string
-  default = "eu-west-2"
+  default = "us-east-1"
 
 }
 
 variable "aws_key_ecr_arn" {
   type = string
-  
+
+}
+
+variable "force_delete" {
+  type    = bool
+  default = false
 }

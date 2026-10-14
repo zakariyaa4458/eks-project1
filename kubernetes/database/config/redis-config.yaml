@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: redis-config
   namespace: application-namespace
-
 data:
-  REDIS_HOST: redis-service
-  REDIS_PORT: "6379"
+  REDIS_HOST: redis-service.database-ns.svc.cluster.local
+  REDIS_PORT: '6379'
+  REDIS_URL: redis://redis-service.database-ns.svc.cluster.local:6379

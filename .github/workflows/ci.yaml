@@ -1,31 +1,36 @@
 name: ci pipeline
 
-run-name: CI Pipeline triggered by ${{ github.actor }}
+run-name: CI triggered by ${{ github.actor }}
 
 on:
   push:
-    branches:
-      - main
-
-
+    branches: [main]
     paths:
-    - Dockerfile
-    - services/**
-    - kubernetes/**
-
+      - "services/**"
+      - "kubernetes/**"
+      - ".github/workflows/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "services/**"
+      - "kubernetes/**"
+      - ".github/workflows/**"
   workflow_dispatch:
+  workflow_call:
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
   application-build:
+    name: Check ${{ matrix.service }}
     runs-on: ubuntu-latest
-
+    timeout-minutes: 20
     strategy:
+      fail-fast: false
+      max-parallel: 3
       matrix:
-        service: 
+        service:
           - api-gateway
           - dashboard-api
           - inventory-service
@@ -35,48 +40,35 @@ jobs:
           - scheduler
           - shipping-service
           - worker
-
     defaults:
-        run:
-          working-directory: services/${{ matrix.service }}
+      run:
+        working-directory: services/${{ matrix.service }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: set up go
+      - name: Set up Go
         uses: actions/setup-go@v7
         with:
-          go-version: '1.25'
-
-      - name: install dependencies
+          go-version-file: services/${{ matrix.service }}/go.mod
+          cache-dependency-path: services/${{ matrix.service }}/go.sum
+      - name: Download dependencies
         run: go mod download
-
-      - name: run tests
+      - name: Run tests
         run: go test ./...
-
-      - name: build application
-        run: go build
+      - name: Build application
+        run: go build ./...
 
   kubernetes-check:
+    name: Check Kubernetes manifests
     runs-on: ubuntu-latest
-
+    timeout-minutes: 15
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Kubernetes Checkov
-      uses: bridgecrewio/checkov-action@master
-      with:
-        directory: kubernetes
-        framework: kubernetes
-        skip_check: CKV_K8S_43,CKV_K8S_14, 
-            
-
-   
-
-
-
-
-
-
-
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Scan Kubernetes manifests
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: kubernetes
+          framework: kubernetes
+          skip_check: CKV_K8S_43,CKV_K8S_14
+          output_format: cli

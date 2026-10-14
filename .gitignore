@@ -23,6 +23,9 @@ services/worker/worker
 *.tfstate
 *.tfstate.backup
 *.tfvars
+!terraform/learner-lab.tfvars
+.tools/
+*.tfplan
 .terraform.lock.hcl
 
 # Kubernetes
@@ -46,3 +49,7 @@ Thumbs.db
 *.pem
 
 
+
+# Python helper cache
+__pycache__/
+.lab-state-bucket

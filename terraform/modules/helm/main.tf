@@ -1,21 +1,3 @@
-resource "helm_release" "cert_manager" {
-  name             = "cert-manager"
-  repository       = "https://charts.jetstack.io"
-  chart            = "cert-manager"
-  version          = "v1.21.0"
-  namespace        = "cert-manager"
-  create_namespace = true
-
-  values = [
-    
-    "${file("helm-values/cert-manager.yaml")}"
-
-  ]
-
-
-}
-
-
 resource "helm_release" "traefik" {
 
   name             = "traefik"
@@ -33,53 +15,7 @@ resource "helm_release" "traefik" {
     #  installCRDs: true
     #EOT
     #,
-    "${file("helm-values/traefik.yaml")}"
-  ]
-
-}
-
-resource "helm_release" "external_dns" {
-
-  name             = "external-dns"
-  repository       = "https://kubernetes-sigs.github.io/external-dns/"
-  chart            = "external-dns"
-  version          = "1.21.1"
-  namespace        = "external-dns"
-  create_namespace = true
-
-
-
-
-
-  values = [
-    <<-EOT
-      installCRDs: true
-    EOT
-    ,
-
-    "${file("helm-values/external-dns.yaml")}"
-  ]
-
-  depends_on = [
-    var.module_external_dns
-  ]
-
-}
-
-
-resource "helm_release" "argocd_deploy" {
-
-  name       = "argocd"
-  repository = "https://argoproj.github.io/argo-helm"
-  chart      = "argo-cd"
-  version    = "5.19.15"
-  timeout    = "600"
-
-  namespace        = "argo-cd"
-  create_namespace = true
-
-  values = [
-    "${file("helm-values/argo-cd.yaml")}"
+    "${file("${path.root}/helm-values/traefik.yaml")}"
   ]
 
 }
@@ -117,34 +53,10 @@ resource "helm_release" "secrets-store-csi-driver" {
 
   values = [
 
-      "${file("helm-values/secret-store.yaml")}"
+      "${file("${path.root}/helm-values/secret-store.yaml")}"
   ]
 
   
-}
-
-resource "helm_release" "aws-ebs-csi-drive" {
-  name = "aws-ebs-csi-driver"
-  namespace = "kube-system"
-  repository = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver"
-  chart = "aws-ebs-csi-driver"
-  version = "2.65.1"
-  create_namespace = true
-
-  values = [
-
-      "${file("helm-values/ebs-csi.yaml")}"
-  ]
-
-   set = [ 
-    
-    {
-    name  = "controller.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
-    value = var.ebs_csi_controller_role_arn
-  }
-  
-  ]
-
 }
 
 resource "helm_release" "prometheus" {
@@ -156,7 +68,7 @@ resource "helm_release" "prometheus" {
   create_namespace = true
 
    values = [
-    "${file("helm-values/values-prom.yaml")}"
+    "${file("${path.root}/helm-values/values-prom.yaml")}"
   ]
 }
 
@@ -169,7 +81,7 @@ resource "helm_release" "grafana" {
   create_namespace = true
 
    values = [
-    "${file("helm-values/values-grafana.yaml")}"
+    "${file("${path.root}/helm-values/values-grafana.yaml")}"
   ]
 }
 
@@ -182,7 +94,7 @@ resource "helm_release" "snapshot_storage_k8s_io" {
   create_namespace = true
 
    values = [
-    "${file("helm-values/snapshot-controller.yaml")}"
+    "${file("${path.root}/helm-values/snapshot-controller.yaml")}"
   ]
 
 }
@@ -195,7 +107,7 @@ resource "helm_release" "secrets_store_csi_driver_aws" {
   create_namespace = true
   
   values = [
-    "${file("helm-values/secret-store-aws.yaml")}"
+    "${file("${path.root}/helm-values/secret-store-aws.yaml")}"
   ]
   
 }
@@ -209,7 +121,7 @@ resource "helm_release"  "keda" {
   version = "2.20.2"
 
   values = [
-    "${file("helm-values/keda.yaml")}"
+    "${file("${path.root}/helm-values/keda.yaml")}"
   ]
   
 }
@@ -225,7 +137,7 @@ resource "helm_release"  "keda" {
 #create_namespace = false
 
 #values = [
-# file("helm-values/aws-load-balancer-controller.yaml")
+# file("${path.root}/helm-values/aws-load-balancer-controller.yaml")
 
 #]
 

@@ -16,7 +16,6 @@ spec:
     rollingUpdate:
       maxUnavailable: 0
       maxSurge: 1
-  replicas: 2
   selector:
     matchLabels:
       app: worker
@@ -34,39 +33,43 @@ spec:
           type: RuntimeDefault
       serviceAccountName: worker-service-account
       containers:
-        - name: worker
-          image: >-
-            499024813019.dkr.ecr.eu-west-2.amazonaws.com/worker:c79cf0316c65a0c431e1c78541e8200aa0b11f61-131
-          imagePullPolicy: Always
-          securityContext:
-            runAsNonRoot: true
-            capabilities:
-              drop:
-                - ALL
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-          ports:
-            - containerPort: 8090
-          envFrom:
-            - secretRef:
-                name: application-secret
-            - secretRef:
-                name: application-secret-sqs
-          resources:
-            requests:
-              memory: 128Mi
-              cpu: 100m
-            limits:
-              memory: 256Mi
-              cpu: 250m
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 8090
-            failureThreshold: 3
-            periodSeconds: 10
-          readinessProbe:
-            tcpSocket:
-              port: 8090
-            initialDelaySeconds: 130
-            periodSeconds: 10
+      - name: worker
+        image: 425959969184.dkr.ecr.us-east-1.amazonaws.com/eks-project1-lab/worker:58606d1a8eddd2b5684459188e74cccdc275cf5f-38051120949-1
+        imagePullPolicy: Always
+        securityContext:
+          runAsNonRoot: true
+          capabilities:
+            drop:
+            - ALL
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+        ports:
+        - containerPort: 8090
+        envFrom:
+        - secretRef:
+            name: application-secret
+        - secretRef:
+            name: application-secret-sqs
+        resources:
+          requests:
+            memory: 128Mi
+            cpu: 100m
+          limits:
+            memory: 256Mi
+            cpu: 250m
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8090
+          failureThreshold: 3
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 8090
+          initialDelaySeconds: 130
+          periodSeconds: 10
+        startupProbe:
+          tcpSocket:
+            port: 8090
+          periodSeconds: 5
+          failureThreshold: 60

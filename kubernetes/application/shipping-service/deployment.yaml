@@ -34,50 +34,43 @@ spec:
           type: RuntimeDefault
       serviceAccountName: shipping-service-service-account
       containers:
-        - name: shipping-service
-          image: >-
-            499024813019.dkr.ecr.eu-west-2.amazonaws.com/shipping-service:c79cf0316c65a0c431e1c78541e8200aa0b11f61-131
-          imagePullPolicy: Always
-          securityContext:
-            runAsNonRoot: true
-            capabilities:
-              drop:
-                - ALL
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-          ports:
-            - containerPort: 8085
-          volumeMounts:
-            - name: aws-secrets-store
-              mountPath: /mnt/secrets-store/application
-              readOnly: true
-          envFrom:
-            - secretRef:
-                name: application-secret
-            - secretRef:
-                name: application-secret-sqs
-          resources:
-            requests:
-              memory: 128Mi
-              cpu: 100m
-            limits:
-              memory: 256Mi
-              cpu: 250m
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 8085
-            initialDelaySeconds: 3
-            periodSeconds: 3
-          readinessProbe:
-            tcpSocket:
-              port: 8085
-            initialDelaySeconds: 15
-            periodSeconds: 10
-      volumes:
-        - name: aws-secrets-store
-          csi:
-            driver: secrets-store.csi.k8s.io
-            readOnly: true
-            volumeAttributes:
-              secretProviderClass: aws-secrets
+      - name: shipping-service
+        image: 425959969184.dkr.ecr.us-east-1.amazonaws.com/eks-project1-lab/shipping-service:58606d1a8eddd2b5684459188e74cccdc275cf5f-38051120949-1
+        imagePullPolicy: Always
+        securityContext:
+          runAsNonRoot: true
+          capabilities:
+            drop:
+            - ALL
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+        ports:
+        - containerPort: 8085
+        envFrom:
+        - secretRef:
+            name: application-secret
+        - secretRef:
+            name: application-secret-sqs
+        resources:
+          requests:
+            memory: 128Mi
+            cpu: 100m
+          limits:
+            memory: 256Mi
+            cpu: 250m
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8085
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        readinessProbe:
+          tcpSocket:
+            port: 8085
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        startupProbe:
+          tcpSocket:
+            port: 8085
+          periodSeconds: 5
+          failureThreshold: 60

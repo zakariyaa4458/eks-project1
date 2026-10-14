@@ -19,7 +19,9 @@ resource "aws_iam_role" "eks-role" {
   })
 
   tags = {
-    tag-key = "tag-value"
+    Project = "eks-project1"
+    Owner = "anhhao1712"
+    Environment = "learning"
   }
 }
 
@@ -45,7 +47,9 @@ resource "aws_iam_role" "node-group-role" {
   })
 
   tags = {
-    tag-key = "tag-value"
+    Project = "eks-project1"
+    Owner = "anhhao1712"
+    Environment = "learning"
   }
 
 }
@@ -86,14 +90,16 @@ resource "aws_iam_role" "flow_log_role" {
         Effect = "Allow"
         Sid    = ""
         Principal = {
-          Service = "eks.amazonaws.com"
+          Service = "vpc-flow-logs.amazonaws.com"
         }
       },
     ]
   })
 
   tags = {
-    tag-key = "tag-value"
+    Project = "eks-project1"
+    Owner = "anhhao1712"
+    Environment = "learning"
   }
 }
 data "aws_iam_policy_document" "flow_log_policy_document" {
@@ -147,7 +153,9 @@ resource "aws_iam_role" "karpenter_node_role" {
   })
 
   tags = {
-    tag-key = "tag-value"
+    Project = "eks-project1"
+    Owner = "anhhao1712"
+    Environment = "learning"
   }
 
 }

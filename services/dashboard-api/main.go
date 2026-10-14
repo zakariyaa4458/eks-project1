@@ -8,6 +8,8 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
@@ -40,6 +42,14 @@ func main() {
 	waitForDB()
 
 	mux := http.NewServeMux()
+	// A single browser endpoint works with a local port-forward without a domain.
+	gatewayURL, err := url.Parse(getEnv("API_GATEWAY_URL", "http://api-gateway-service"))
+	if err != nil {
+		log.Fatalf("Invalid API_GATEWAY_URL: %v", err)
+	}
+	gatewayProxy := httputil.NewSingleHostReverseProxy(gatewayURL)
+	mux.Handle("/auth/", gatewayProxy)
+	mux.Handle("/api/", gatewayProxy)
 	mux.HandleFunc("/livez", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
 	mux.HandleFunc("/healthz", handleHealth)
 	mux.HandleFunc("/dashboard/healthz", handleHealth)

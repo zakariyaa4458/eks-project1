@@ -1,0 +1,26 @@
+DEPLOY QUA GITHUB ACTIONS
+Repo: https://github.com/anhhao1712/eks-project1
+AWS account: 241533156847 | Region: us-east-1
+
+1. CREDENTIALS AWS
+Đăng nhập AWS access portal, vào account 241533156847 và chọn permission set SystemAdministrator. Lấy credentials tạm thời theo hướng dẫn AWS CLI/Access portal. Trong GitHub repo mở Settings → Secrets and variables → Actions → Secrets, tạo/cập nhật đủ:
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- AWS_SESSION_TOKEN
+Không đưa các giá trị này vào code hoặc Variables. Credentials hết hạn thì cập nhật lại cả ba secrets.
+
+Workflow hiện dùng credentials tạm thời từ Access Portal; nó không tự gia hạn credentials và không bootstrap GitHub OIDC role.
+
+2. DEPLOY
+Repo → Actions → deploy infrastructure → Run workflow → branch main → stage all. Workflow tự tạo state bucket nếu chưa có, bật versioning, block public access, mã hóa AES256 và gắn tags; sau đó chạy Terraform.
+
+Sau khi hạ tầng/platform chạy xong, mở Actions → app-cd pipeline → Run workflow → main. Pipeline build và push 9 service images, cập nhật manifests để Argo CD deploy.
+
+3. MỞ ỨNG DỤNG
+Xem dashboard URL trong workflow summary. Traefik/NLB sẽ có hostname AWS dạng `...elb.amazonaws.com`; không cần domain riêng hay Route 53.
+
+4. XÓA HẠ TẦNG
+Actions → destroy infrastructure → Run workflow. Mặc định giữ state bucket. Chỉ bật `delete_state_bucket` nếu đồng ý xóa bucket và toàn bộ lịch sử state.
+
+5. GHI CHÚ QUYỀN
+Terraform cần quyền tạo EKS, VPC/network resources, ECR, SQS, IAM roles/policies/OIDC, Secrets Manager và Load Balancer. Nếu permission set không cho phép một tài nguyên, workflow sẽ báo lỗi quyền; cần nhờ quản trị viên AWS cấp quyền. Không chạy deploy trước khi xác nhận account/region đúng.

@@ -1,180 +1,69 @@
-name: infrastructure pipeline 
-
-run-name: infrastructure Pipeline triggered by ${{ github.actor }}
-
+name: deploy infrastructure
+run-name: Deploy AWS infrastructure by ${{ github.actor }}
 on:
-  push:
-    branches:
-      - main
-
-
-    paths:
-    - terraform/**
-
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: 'all = AWS + platform; infra = AWS; platform = Argo/EBS/secrets; refresh = renew SQS credentials'
+        required: true
+        type: choice
+        default: all
+        options: [all, infra, platform, refresh]
 permissions:
-  id-token: write
   contents: read
-  actions: read
-
+concurrency:
+  group: eks-project1-terraform
+  cancel-in-progress: false
 jobs:
-  terraform-check:
+  deploy:
     runs-on: ubuntu-latest
-    
-
-    defaults:
-      run:
-        working-directory: terraform
-
+    timeout-minutes: 90
     steps:
-        - name: checkout code
-          uses: actions/checkout@v4
-
-        - name: configure aws
-          uses: aws-actions/configure-aws-credentials@v4
-
-          with:
-            role-to-assume: arn:aws:iam::499024813019:role/terraform_aws
-            aws-region: eu-west-2
-
-        - name: Sts GetCallerIdentity
-          run: |
-              aws sts get-caller-identity
-
-
-        - name: setup terraform
-          uses: hashicorp/setup-terraform@v4
-          with: 
-            terraform_version: 1.10.0
-
-        - name: terraform-init
-          run: terraform init
-        
-        - name: Check Terraform state
-          run: |
-                terraform workspace show
-                terraform state pull | grep -E '"lineage"|"serial"'
-                terraform state list | grep traefik || true
-
-        - name: terraform-fmt
-          run: terraform fmt 
-
-        - name: setup tflint
-          uses: terraform-linters/setup-tflint@v4
-
-        - name: run tflint
-          run: tflint
-
-
-        - name: run checkov
-          uses: bridgecrewio/checkov-action@master
-          with:
-            hard_fail_on: CKV_AWS_103,CKV2_AWS_74,CKV2_AWS_12,CKV2_AWS_260,CKV2_AWS_129
-            framework: terraform
-            
-
-        - name: terraform-validate
-          run: terraform validate
-
-        - name: Check live Traefik state
-          run: |
-                aws eks update-kubeconfig --region eu-west-2 --name eks-cluster
-                kubectl get svc -n traefik || true
-                helm status traefik -n traefik || true
-
-        - name: Reinitialize Terraform backend
-          run: |
-                 rm -rf .terraform
-                 terraform init -reconfigure
-
-        - name: Verify current state
-          run: |
-                terraform state pull | grep -E '"lineage"|"serial"' 
-
-        - name: terraform-plan
-          
-          env: 
-                TF_VAR_aws_key_arn: ${{ secrets.AWS_KEY_ARN }}
-                TF_VAR_aws_key_ecr_arn: ${{ secrets.AWS_SECRET_KEY }}
-                TF_VAR_cloudwatch_key_arn: ${{ secrets.CLOUDWATCH_KEY_ARN }}
-                TF_VAR_aws_account_id: ${{ secrets.AWS_ACCOUNT_ID }}
-                TF_VAR_eks_role_arn: ${{ secrets.EKS_ROLE_ARN }}
-                TF_VAR_flow_log_role_arn: ${{ secrets.FLOW_LOG_ROLE_ARN }}
-                TF_VAR_aws_iam_role_node_group_role_arn: ${{ secrets.AWS_IAM_ROLE_NODE_GROUP_ROLE_ARN }}
-                TF_VAR_database_url: ${{ secrets.TF_VAR_DATABASE_URL }}
-                
-          run: | 
-                 terraform plan -out=tfplan -input=false
-                
-              
-    
-        - name: change it to readable txt
-          run: terraform show -no-color tfplan > readable-plan1.txt
-
-        - name: Upload Terraform Plan
-          uses: actions/upload-artifact@v4
-          with:
-            name: tfplan
-            path: ./terraform/tfplan
-
-        - name: Upload Terraform Plan
-          uses: actions/upload-artifact@v4
-          with:
-            name: readable-plan1.txt
-            path: ./terraform/readable-plan1.txt
-
-  terraform-deploy:
-    runs-on: ubuntu-latest
-    needs: terraform-check
-    
-    defaults:
-      run:
-        working-directory: terraform
-
-    steps:
-      - name: checkout
-        uses: actions/checkout@v4
-       
-
-      - name: downloading tf plan
-        uses: actions/download-artifact@v4
-        with:
-          name: tfplan
-          path: downloaded-tfplan
-        
-
-      - name: downloading tf plan
-        uses: actions/download-artifact@v4
-        with:
-          name: readable-plan1.txt
-          path: downloaded-readable-plan1.txt
-  
-
-      - name: configure aws
-        uses: aws-actions/configure-aws-credentials@v4
-
-        with:
-          role-to-assume: arn:aws:iam::499024813019:role/terraform_aws
-          aws-region: eu-west-2
-  
-
-      - name: terraform setup
-        uses: hashicorp/setup-terraform@v4
-        with: 
-            terraform_version: 1.10.0
-
-      - name: terraform-init
-        run: terraform init
-
-      - name: aws cli check
+      - uses: actions/checkout@v4
+      - name: Require main
+        env:
+          SELECTED_REF: ${{ github.ref }}
         run: |
-              aws --version
-              aws sts get-caller-identity
-              aws eks get-token --cluster-name eks-cluster
-
-
-      - name: terraform apply
+          if [[ "$SELECTED_REF" != refs/heads/main ]]; then
+            echo '::error::Run this workflow on main.'
+            exit 1
+          fi
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: '1.13.5'
+          terraform_wrapper: false
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: 'v1.35.0'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+          allowed-account-ids: '241533156847'
+      - name: Check AWS session
+        run: bash scripts/check-lab-actions.sh
+      - name: Apply Terraform stages
+        env:
+          DEPLOY_STAGE: ${{ inputs.stage }}
+          STATE_BUCKET: ${{ vars.TF_STATE_BUCKET || 'eks-project1-tfstate-241533156847-us-east-1' }}
+        run: bash scripts/deploy-lab.sh "$DEPLOY_STAGE"
+      - name: Show dashboard URL and next step
+        env:
+          DEPLOY_STAGE: ${{ inputs.stage }}
         run: |
-               terraform apply ../downloaded-tfplan/tfplan 
-               
-
-
+          url="$(TF_DATA_DIR=/tmp/eks-tf-infra terraform -chdir=terraform output -raw dashboard_url)"
+          printf '### AWS deployment\nDashboard: [%s](%s)\n\n' "$url" "$url" >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$DEPLOY_STAGE" == infra ]]; then
+            echo 'Next: run app-cd pipeline on main, wait for green, then run deploy infrastructure with stage platform.' >> "$GITHUB_STEP_SUMMARY"
+          elif [[ "$DEPLOY_STAGE" == all ]]; then
+            echo 'AWS and platform are ready. Run app-cd pipeline on main to publish images and update manifests. Argo CD deploys them automatically.' >> "$GITHUB_STEP_SUMMARY"
+          elif [[ "$DEPLOY_STAGE" == platform ]]; then
+            echo 'Argo CD is deploying manifests from main. Allow application startup time before opening the dashboard.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'SQS credentials refreshed and SQS deployments restarted.' >> "$GITHUB_STEP_SUMMARY"
+          fi

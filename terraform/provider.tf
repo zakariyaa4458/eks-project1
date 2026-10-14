@@ -14,7 +14,16 @@ terraform {
 
 # Configure the AWS Provider
 provider "aws" {
-  region = var.region
+  region              = var.region
+  allowed_account_ids = [var.aws_account_id]
+  default_tags {
+    tags = {
+      Project     = "eks-project1"
+      Owner       = "anhhao1712"
+      Environment = "learning"
+      ManagedBy   = "Terraform"
+    }
+  }
 }
 
 

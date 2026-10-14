@@ -1,26 +1,8 @@
-module "cert_manager_irsa_role" {
-  #checkov:skip=CKV_AWS_1: 
-  version = "5.60.0"
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-
-  role_name                     = "cert-manager"
-  attach_cert_manager_policy    = true
-  cert_manager_hosted_zone_arns = ["arn:aws:route53:::hostedzone/Z101674438AEID6T19NFK"]
-
-  oidc_providers = {
-    eks = {
-      provider_arn               = var.aws_iam_openid_connect_provider_arn
-      namespace_service_accounts = ["cert-manager:cert-manager"]
-    }
-  }
-
-}
-
 module "karpenter" {
   #checkov:skip=CKV_AWS_1: 
   source = "terraform-aws-modules/eks/aws//modules/karpenter"
   region = var.region
- 
+
 
   cluster_name = var.aws_eks_cluster
 
@@ -35,29 +17,10 @@ module "karpenter" {
   }
 }
 
-module "external-dns" {
-  #checkov:skip=CKV_AWS_1: 
-  version = "5.60.0"
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-
-
-  role_name                     = "external-dns"
-  attach_external_dns_policy    = true
-  external_dns_hosted_zone_arns = ["arn:aws:route53:::hostedzone/Z101674438AEID6T19NFK"]
-
-  oidc_providers = {
-    eks = {
-      provider_arn               = var.aws_iam_openid_connect_provider_arn
-      namespace_service_accounts = ["external-dns:external-dns"]
-    }
-  }
-
-}
-
 module "aws-load-balancer-controller" {
   #checkov:skip=CKV_AWS_1: 
   version = "5.0.1"
-  source = "lablabs/eks-load-balancer-controller/aws"
+  source  = "lablabs/eks-load-balancer-controller/aws"
 
 
   cluster_name = var.aws_eks_cluster
@@ -109,34 +72,34 @@ resource "aws_iam_role" "ebs_csi_controller" {
 
 resource "aws_iam_role_policy_attachment" "AmazonEBSCSIDriverPolicy" {
   role       = aws_iam_role.ebs_csi_controller.name
-  policy_arn =  "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
 
 resource "aws_iam_role" "worker_iam_role" {
   name = "worker-iam-role"
 
   assume_role_policy = jsonencode({
-   Version = "2012-10-17"
+    Version = "2012-10-17"
 
-   Statement = [
+    Statement = [
       {
         Action = "sts:AssumeRoleWithWebIdentity"
         Effect = "Allow"
 
         Principal = {
-          Federated =  var.aws_iam_openid_connect_provider_arn
+          Federated = var.aws_iam_openid_connect_provider_arn
         }
 
         Condition = {
           StringEquals = {
-        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:sub" = "system:serviceaccount:application-namespace:worker-service-account"
-        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:aud" = "sts.amazonaws.com"               
-      }, 
+            "${replace(var.eks_oidc_issuer_url, "https://", "")}:sub" = "system:serviceaccount:application-namespace:worker-service-account"
+            "${replace(var.eks_oidc_issuer_url, "https://", "")}:aud" = "sts.amazonaws.com"
+          },
         }
       }
     ]
 
-  }
+    }
   )
 }
 
@@ -153,8 +116,8 @@ data "aws_iam_policy_document" "worker_iam_policy_document" {
       "sqs:SendMessage"
     ]
 
-    
-    resources = ["arn:aws:sqs:eu-west-2:499024813019:eks_sqs"]
+
+    resources = ["arn:aws:sqs:${var.region}:${var.aws_account_id}:eks_sqs"]
   }
 
 }
@@ -176,27 +139,27 @@ resource "aws_iam_role" "order_iam_role" {
   name = "order-iam-role"
 
   assume_role_policy = jsonencode({
-   Version = "2012-10-17"
+    Version = "2012-10-17"
 
-   Statement = [
+    Statement = [
       {
         Action = "sts:AssumeRoleWithWebIdentity"
         Effect = "Allow"
 
         Principal = {
-          Federated =  var.aws_iam_openid_connect_provider_arn
+          Federated = var.aws_iam_openid_connect_provider_arn
         }
 
         Condition = {
           StringEquals = {
-        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:sub" = "system:serviceaccount:application-namespace:order-service-service-account"
-        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:aud" = "sts.amazonaws.com"               
-      }, 
+            "${replace(var.eks_oidc_issuer_url, "https://", "")}:sub" = "system:serviceaccount:application-namespace:order-service-service-account"
+            "${replace(var.eks_oidc_issuer_url, "https://", "")}:aud" = "sts.amazonaws.com"
+          },
         }
       }
     ]
 
-  }
+    }
   )
 }
 
@@ -208,8 +171,8 @@ data "aws_iam_policy_document" "order_iam_policy_document" {
       "sqs:SendMessage"
     ]
 
-    
-    resources = ["arn:aws:sqs:eu-west-2:499024813019:eks_sqs"]
+
+    resources = ["arn:aws:sqs:${var.region}:${var.aws_account_id}:eks_sqs"]
   }
 
 }
@@ -228,27 +191,27 @@ resource "aws_iam_role" "shipping_iam_role" {
   name = "shipping-iam-role"
 
   assume_role_policy = jsonencode({
-   Version = "2012-10-17"
+    Version = "2012-10-17"
 
-   Statement = [
+    Statement = [
       {
         Action = "sts:AssumeRoleWithWebIdentity"
         Effect = "Allow"
 
         Principal = {
-          Federated =  var.aws_iam_openid_connect_provider_arn
+          Federated = var.aws_iam_openid_connect_provider_arn
         }
 
         Condition = {
           StringEquals = {
-        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:sub" = "system:serviceaccount:application-namespace:shipping-service-service-account"
-        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:aud" = "sts.amazonaws.com"               
-      }, 
+            "${replace(var.eks_oidc_issuer_url, "https://", "")}:sub" = "system:serviceaccount:application-namespace:shipping-service-service-account"
+            "${replace(var.eks_oidc_issuer_url, "https://", "")}:aud" = "sts.amazonaws.com"
+          },
         }
       }
     ]
 
-  }
+    }
   )
 }
 
@@ -260,8 +223,8 @@ data "aws_iam_policy_document" "shipping_iam_policy_document" {
       "sqs:SendMessage"
     ]
 
-    
-    resources = ["arn:aws:sqs:eu-west-2:499024813019:eks_sqs"]
+
+    resources = ["arn:aws:sqs:${var.region}:${var.aws_account_id}:eks_sqs"]
   }
 
 }
@@ -280,27 +243,27 @@ resource "aws_iam_role" "payment_iam_role" {
   name = "payment-iam-role"
 
   assume_role_policy = jsonencode({
-   Version = "2012-10-17"
+    Version = "2012-10-17"
 
-   Statement = [
+    Statement = [
       {
         Action = "sts:AssumeRoleWithWebIdentity"
         Effect = "Allow"
 
         Principal = {
-          Federated =  var.aws_iam_openid_connect_provider_arn
+          Federated = var.aws_iam_openid_connect_provider_arn
         }
 
         Condition = {
           StringEquals = {
-        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:sub" = "system:serviceaccount:application-namespace:payment-service-service-account"
-        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:aud" = "sts.amazonaws.com"               
-      }, 
+            "${replace(var.eks_oidc_issuer_url, "https://", "")}:sub" = "system:serviceaccount:application-namespace:payment-service-service-account"
+            "${replace(var.eks_oidc_issuer_url, "https://", "")}:aud" = "sts.amazonaws.com"
+          },
         }
       }
     ]
 
-  }
+    }
   )
 }
 
@@ -312,8 +275,8 @@ data "aws_iam_policy_document" "payment_iam_policy_document" {
       "sqs:SendMessage"
     ]
 
-    
-    resources = ["arn:aws:sqs:eu-west-2:499024813019:eks_sqs"]
+
+    resources = ["arn:aws:sqs:${var.region}:${var.aws_account_id}:eks_sqs"]
   }
 
 }
@@ -332,27 +295,27 @@ resource "aws_iam_role" "postgres_iam_role" {
   name = "postgres-role"
 
   assume_role_policy = jsonencode({
-   Version = "2012-10-17"
+    Version = "2012-10-17"
 
-   Statement = [
+    Statement = [
       {
         Action = "sts:AssumeRoleWithWebIdentity"
         Effect = "Allow"
 
         Principal = {
-          Federated =  var.aws_iam_openid_connect_provider_arn
+          Federated = var.aws_iam_openid_connect_provider_arn
         }
 
         Condition = {
           StringEquals = {
-        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:sub" = "system:serviceaccount:database-ns:postgres-service-account"
-        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:aud" = "sts.amazonaws.com"               
-      }, 
+            "${replace(var.eks_oidc_issuer_url, "https://", "")}:sub" = "system:serviceaccount:database-ns:postgres-service-account"
+            "${replace(var.eks_oidc_issuer_url, "https://", "")}:aud" = "sts.amazonaws.com"
+          },
         }
       }
     ]
 
-  }
+    }
   )
 }
 
@@ -365,8 +328,8 @@ data "aws_iam_policy_document" "postgres_iam_policy_document" {
       "secretsmanager:DescribeSecret"
     ]
 
-    
-    resources = ["arn:aws:secretsmanager:eu-west-2:499024813019:secret:eks/postgres-M1JfQr"]
+
+    resources = [var.postgres_secret_arn]
   }
 
 }
@@ -385,27 +348,27 @@ resource "aws_iam_role" "database_api_iam_role" {
   name = "database-api-role"
 
   assume_role_policy = jsonencode({
-   Version = "2012-10-17"
+    Version = "2012-10-17"
 
-   Statement = [
+    Statement = [
       {
         Action = "sts:AssumeRoleWithWebIdentity"
         Effect = "Allow"
 
         Principal = {
-          Federated =  var.aws_iam_openid_connect_provider_arn
+          Federated = var.aws_iam_openid_connect_provider_arn
         }
 
         Condition = {
           StringEquals = {
-        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:sub" = "system:serviceaccount:application-namespace:dashboard-api-service-account"
-        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:aud" = "sts.amazonaws.com"               
-      }, 
+            "${replace(var.eks_oidc_issuer_url, "https://", "")}:sub" = "system:serviceaccount:application-namespace:dashboard-api-service-account"
+            "${replace(var.eks_oidc_issuer_url, "https://", "")}:aud" = "sts.amazonaws.com"
+          },
         }
       }
     ]
 
-  }
+    }
   )
 }
 
@@ -418,8 +381,8 @@ data "aws_iam_policy_document" "aws_secret_iam_policy_document" {
       "secretsmanager:DescribeSecret"
     ]
 
-    
-    resources = ["arn:aws:secretsmanager:eu-west-2:499024813019:secret:database_url-4hCZDH"]
+
+    resources = [var.database_secret_arn]
   }
 
 }
@@ -445,12 +408,12 @@ resource "aws_iam_role_policy_attachment" "aws_secret_iam_policy_attachments_" {
 
 locals {
   database_service_accounts = {
-    inventory     = "inventory-service-service-account"
-    order         = "order-service-service-account"
-    payment       = "payment-service-service-account"
-    scheduler     = "scheduler-service-account"
-    shipping      = "shipping-service-service-account"
-    notification  = "notification-service-service-account"
+    inventory    = "inventory-service-service-account"
+    order        = "order-service-service-account"
+    payment      = "payment-service-service-account"
+    scheduler    = "scheduler-service-account"
+    shipping     = "shipping-service-service-account"
+    notification = "notification-service-service-account"
   }
 }
 
@@ -473,8 +436,8 @@ resource "aws_iam_role" "database_service_roles" {
 
       Condition = {
         StringEquals = {
-          "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:sub" = "system:serviceaccount:application-namespace:${each.value}"
-          "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:aud" = "sts.amazonaws.com"
+          "${replace(var.eks_oidc_issuer_url, "https://", "")}:sub" = "system:serviceaccount:application-namespace:${each.value}"
+          "${replace(var.eks_oidc_issuer_url, "https://", "")}:aud" = "sts.amazonaws.com"
         }
       }
     }]
@@ -494,8 +457,8 @@ data "aws_iam_policy_document" "services_iam_policy_document" {
       "sqs:SendMessage"
     ]
 
-    
-    resources = ["arn:aws:sqs:eu-west-2:499024813019:eks_sqs"]
+
+    resources = ["arn:aws:sqs:${var.region}:${var.aws_account_id}:eks_sqs"]
   }
 
 }
@@ -504,27 +467,27 @@ resource "aws_iam_role" "keda_iam_role" {
   name = "keda-iam-role"
 
   assume_role_policy = jsonencode({
-   Version = "2012-10-17"
+    Version = "2012-10-17"
 
-   Statement = [
+    Statement = [
       {
         Action = "sts:AssumeRoleWithWebIdentity"
         Effect = "Allow"
 
         Principal = {
-          Federated =  var.aws_iam_openid_connect_provider_arn
+          Federated = var.aws_iam_openid_connect_provider_arn
         }
 
         Condition = {
           StringEquals = {
-        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:sub" = "system:serviceaccount:kube-system:keda-operator"
-        "oidc.eks.eu-west-2.amazonaws.com/id/507F56E12A4EA46AD10B6AA97B90F722:aud" = "sts.amazonaws.com"               
-      }, 
+            "${replace(var.eks_oidc_issuer_url, "https://", "")}:sub" = "system:serviceaccount:kube-system:keda-operator"
+            "${replace(var.eks_oidc_issuer_url, "https://", "")}:aud" = "sts.amazonaws.com"
+          },
         }
       }
     ]
 
-  }
+    }
   )
 }
 
@@ -536,8 +499,8 @@ data "aws_iam_policy_document" "keda_iam_policy_document" {
       "sqs:GetQueueAttributes"
     ]
 
-    
-    resources = ["arn:aws:sqs:eu-west-2:499024813019:eks_sqs"]
+
+    resources = ["arn:aws:sqs:${var.region}:${var.aws_account_id}:eks_sqs"]
   }
 
 }

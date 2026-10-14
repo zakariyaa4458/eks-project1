@@ -17,7 +17,7 @@ serviceAccount:
   name: aws-load-balancer-controller
   automountServiceAccountToken: true
 
-region: eu-west-2
+region: us-east-1
 
 securityContext:
   readOnlyRootFilesystem: true

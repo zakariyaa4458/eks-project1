@@ -1,17 +1,10 @@
 server:
-
   extraArgs:
-  - --insecure
-  service: 
+    - --insecure
+  service:
     type: ClusterIP
   ingress:
+    enabled: false
+ingressRoute:
+  dashboard:
     enabled: true
-    ingressClassName: "traefik"
-    annotations:
-      cert-manager.io/cluster-issuer: issuer
-    hosts:
-    - argocd.ecommerce.zakariyaalab.com
-    tls:
-    - secretName: argocd-ingress-tls
-      hosts:
-      - argocd.ecommerce.zakariyaalab.com   

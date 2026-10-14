@@ -3,7 +3,7 @@ resource "aws_vpc" "main" {
   region           = var.region
   cidr_block       = "10.0.0.0/16"
   instance_tenancy = "default"
-  
+
 
   tags = {
     Name = "eks-vpc"
@@ -13,7 +13,7 @@ resource "aws_vpc" "main" {
 resource "aws_default_security_group" "default" {
   vpc_id = aws_vpc.main.id
 
-  
+
 }
 
 resource "aws_subnet" "private-subnet" {
@@ -25,17 +25,17 @@ resource "aws_subnet" "private-subnet" {
 
 
   for_each = {
-    "eu-west-2a" = "10.0.4.0/24"
-    "eu-west-2b" = "10.0.5.0/24"
-    "eu-west-2c" = "10.0.6.0/24"
+    "${var.region}a" = "10.0.4.0/24"
+    "${var.region}b" = "10.0.5.0/24"
+    "${var.region}c" = "10.0.6.0/24"
   }
   availability_zone = each.key
   cidr_block        = each.value
 
   tags = {
-    Name                                = "private-subnet-${each.key}"
+    Name                              = "private-subnet-${each.key}"
     "kubernetes.io/role/internal-elb" = "1"
-    "karpenter.sh/discovery" = "eks-cluster"
+    "karpenter.sh/discovery"          = "eks-cluster"
 
   }
 }
@@ -47,15 +47,15 @@ resource "aws_subnet" "public-eks-subnet" {
   map_public_ip_on_launch = false
 
   for_each = {
-    "eu-west-2a" = "10.0.1.0/24"
-    "eu-west-2b" = "10.0.2.0/24"
-    "eu-west-2c" = "10.0.3.0/24"
+    "${var.region}a" = "10.0.1.0/24"
+    "${var.region}b" = "10.0.2.0/24"
+    "${var.region}c" = "10.0.3.0/24"
   }
   cidr_block        = each.value
   availability_zone = each.key
 
   tags = {
-    Name                       = "eks-subnet-${each.key}"
+    Name                     = "eks-subnet-${each.key}"
     "kubernetes.io/role/elb" = "1"
   }
 }
@@ -100,12 +100,12 @@ resource "aws_route_table_association" "public-route-table-association" {
 
 resource "aws_nat_gateway" "nat-gateway" {
   allocation_id = aws_eip.nat-eip.id
-  subnet_id     = aws_subnet.public-eks-subnet["eu-west-2a"].id
+  subnet_id     = aws_subnet.public-eks-subnet["${var.region}a"].id
   region        = var.region
 
   tags = {
     Name        = "nat-gateway"
-    description = "NAT Gateway for private subnets, placed in public subnet eu-west-2a"
+    description = "NAT Gateway for private subnets, placed in public subnet ${var.region}a"
   }
 }
 

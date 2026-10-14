@@ -8,7 +8,7 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/zakariyaa4458/eks-project1
+    repoURL: https://github.com/anhhao1712/eks-project1.git
     targetRevision: main
     path: kubernetes/argocd/apps
 

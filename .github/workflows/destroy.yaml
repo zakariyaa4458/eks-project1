@@ -1,70 +1,60 @@
-name: destroy pipeline
-
-run-name:  Destroy pipeline triggered by ${{ github.actor }}
-
+name: destroy infrastructure
+run-name: Destroy AWS project by ${{ github.actor }}
 on:
   workflow_dispatch:
-
+    inputs:
+      delete_state_bucket:
+        description: 'Also permanently delete the current state bucket and its history'
+        required: true
+        type: boolean
+        default: false
 permissions:
-  id-token: write
   contents: read
-
+concurrency:
+  group: eks-project1-terraform
+  cancel-in-progress: false
 jobs:
-  terraform-destroy:
+  destroy:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 90
     steps:
-
-      - name: checkout code
-        uses: actions/checkout@v4
-
-      - name: configure Aws credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::499024813019:role/githubs-action-destroypipeline
-          aws-region: eu-west-2
-
-      - name: setup terraform
-        uses: hashicorp/setup-terraform@v4
-        with:
-          terraform_version: 1.10.0
-
-      - name: Terraform init
-        working-directory: terraform
-        run: terraform init
-
-      - name: terraform destroy plan
-        working-directory: terraform
-
+      - uses: actions/checkout@v4
+      - name: Require main
         env:
-                TF_VAR_aws_key_arn: ${{ secrets.AWS_KEY_ARN }}
-                TF_VAR_aws_key_ecr_arn: ${{ secrets.AWS_SECRET_KEY }}
-                TF_VAR_cloudwatch_key_arn: ${{ secrets.CLOUDWATCH_KEY_ARN }}
-                TF_VAR_aws_account_id: ${{ secrets.AWS_ACCOUNT_ID }}
-                TF_VAR_eks_role_arn: ${{ secrets.EKS_ROLE_ARN }}
-                TF_VAR_flow_log_role_arn: ${{ secrets.FLOW_LOG_ROLE_ARN }}
-                TF_VAR_aws_iam_role_node_group_role_arn: ${{ secrets.AWS_IAM_ROLE_NODE_GROUP_ROLE_ARN }}
-                TF_VAR_database_url: ${{ secrets.TF_VAR_DATABASE_URL }}
-                
-        run: terraform plan -destroy -out=destroy.tfplan
-
-      - name: Apply Terraform destroy plan
-        working-directory: terraform
-        run: terraform apply -auto-approve destroy.tfplan
-
-      - name: Verify Terraform state is empty
-        working-directory: terraform
+          SELECTED_REF: ${{ github.ref }}
         run: |
-             state_list=$(terraform state list)
-
-             if [ -n "$state_list" ]; then
-               echo "there are still resources in this terraform state:"
-               echo "$state_list"
-               exit 1
-
-             fi
-
-              echo "Terraform state is empty."
-
-
-      
+          if [[ "$SELECTED_REF" != refs/heads/main ]]; then
+            echo '::error::Run this workflow on main.'
+            exit 1
+          fi
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: '1.13.5'
+          terraform_wrapper: false
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: 'v1.35.0'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+          allowed-account-ids: '241533156847'
+      - name: Check AWS session
+        run: bash scripts/check-lab-actions.sh
+      - name: Delete workloads, volumes, platform and AWS infrastructure
+        env:
+          STATE_BUCKET: ${{ vars.TF_STATE_BUCKET || 'eks-project1-tfstate-241533156847-us-east-1' }}
+          DELETE_STATE_BUCKET: ${{ inputs.delete_state_bucket }}
+        run: |
+          if [[ "$DELETE_STATE_BUCKET" == true ]]; then
+            bash scripts/destroy-lab-all.sh
+            echo 'Project deployment and dedicated state bucket deleted.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            bash scripts/deploy-lab.sh destroy
+            echo 'Project deployment deleted. State bucket retained.' >> "$GITHUB_STEP_SUMMARY"
+          fi

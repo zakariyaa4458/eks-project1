@@ -3,22 +3,23 @@ kind: Application
 metadata:
   name: database
   namespace: argo-cd
-
+  annotations:
+    argocd.argoproj.io/sync-wave: '-10'
 spec:
   project: default
-
   source:
-    repoURL: https://github.com/zakariyaa4458/eks-project1
+    repoURL: https://github.com/anhhao1712/eks-project1.git
     targetRevision: main
     path: kubernetes/database
-
+    directory:
+      recurse: true
+      exclude: '**/secret-provider-class.yaml'
   destination:
     server: https://kubernetes.default.svc
     namespace: database-ns
-
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=true
+    - CreateNamespace=true
